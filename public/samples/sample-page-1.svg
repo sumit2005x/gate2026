@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1100" width="800" height="1100">
+  <rect width="800" height="1100" fill="#FCFAF6" />
+  <rect x="40" y="40" width="720" height="1020" fill="none" stroke="#E5E2D8" stroke-width="1" />
+  
+  <text x="60" y="80" font-family="monospace" font-size="13" fill="#6F6D66">BYLINE SAMPLE PREVIEW · PAGE 1</text>
+  <line x1="60" y1="95" x2="740" y2="95" stroke="#DAD7CE" stroke-width="1" />
+
+  <text x="60" y="150" font-family="Georgia, serif" font-size="28" font-weight="bold" fill="#171717">Methodology & Virtual Calculator Traps</text>
+  
+  <rect x="60" y="180" width="680" height="140" rx="8" fill="#F2F0E8" stroke="#DAD7CE" />
+  <text x="85" y="215" font-family="monospace" font-size="14" font-weight="bold" fill="#344BB0">TYPE 04 : PIPELINE SPEEDUP &amp; LATENCY</text>
+  <text x="85" y="245" font-family="sans-serif" font-size="15" fill="#171717">Years asked: 2015, 2017, 2019, 2021, 2023, 2025 (6 times)</text>
+  <text x="85" y="275" font-family="sans-serif" font-size="14" fill="#6F6D66">Round-off warning: Always keep 4 decimals before final clock multiplier!</text>
+
+  <foreignObject x="60" y="360" width="680" height="580">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: sans-serif; font-size: 16px; color: #333; line-height: 1.6;">
+      <p style="font-weight: 600; color: #171717; margin-bottom: 12px;">Problem Statement (GATE CSE Official PYQ):</p>
+      <p style="background: #FFF; padding: 14px; border: 1px solid #DAD7CE; border-radius: 6px; font-family: monospace; font-size: 14px;">
+        Consider a 5-stage pipeline with stage latencies 120ps, 90ps, 150ps, 110ps, and 130ps. The pipeline register delay is 10ps. Calculate the speedup achieved over non-pipelined execution for 1000 tasks. Round off to 2 decimal places.
+      </p>
+      
+      <p style="font-weight: 600; color: #171717; margin-top: 20px;">Standard Trap &amp; Solution:</p>
+      <ul style="padding-left: 20px; color: #45443F;">
+        <li>Non-pipelined total time = 120 + 90 + 150 + 110 + 130 = 600 ps.</li>
+        <li>Pipelined clock cycle = max(120, 90, 150, 110, 130) + 10 = 150 + 10 = 160 ps.</li>
+        <li>Time for 1000 tasks = (5 + 1000 - 1) * 160 ps = 1004 * 160 = 160,640 ps.</li>
+        <li>Speedup = (1000 * 600) / 160,640 = 600,000 / 160,640 = <strong>3.7348...</strong></li>
+        <li><strong>Final answer to enter: 3.73</strong> (Range accepted: 3.72 to 3.75)</li>
+      </ul>
+    </div>
+  </foreignObject>
+
+  <!-- Watermark -->
+  <text x="400" y="600" text-anchor="middle" font-family="sans-serif" font-size="64" font-weight="900" fill="#171717" opacity="0.04" transform="rotate(-30 400 600)">SAMPLE PREVIEW</text>
+
+  <line x1="60" y1="1020" x2="740" y2="1020" stroke="#DAD7CE" stroke-width="1" />
+  <text x="60" y="1045" font-family="monospace" font-size="12" fill="#6F6D66">BYLINE DIGITAL PUBLISHING · ALL RIGHTS RESERVED</text>
+  <text x="740" y="1045" text-anchor="end" font-family="monospace" font-size="12" fill="#6F6D66">GATEWALA EDITION</text>
+</svg>

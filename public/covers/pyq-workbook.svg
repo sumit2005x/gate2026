@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <linearGradient id="paperGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F7F6F2" />
+      <stop offset="100%" stop-color="#EAE7DE" />
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#DAD7CE" stroke-width="0.7" opacity="0.4"/>
+    </pattern>
+  </defs>
+
+  <!-- Paper background -->
+  <rect width="800" height="1000" fill="url(#paperGrad)" />
+  <rect width="800" height="1000" fill="url(#grid)" />
+
+  <!-- Spine indicator -->
+  <rect x="0" y="0" width="24" height="1000" fill="#171717" opacity="0.08" />
+  <line x1="24" y1="0" x2="24" y2="1000" stroke="#171717" stroke-width="1.5" opacity="0.15" />
+
+  <!-- Top bar -->
+  <line x1="60" y1="80" x2="740" y2="80" stroke="#171717" stroke-width="2" />
+  <text x="60" y="65" font-family="monospace" font-size="16" fill="#171717" font-weight="600" letter-spacing="2">BYLINE PUBLISHING · INDIA</text>
+  <text x="740" y="65" text-anchor="end" font-family="monospace" font-size="16" fill="#171717" font-weight="600" letter-spacing="2">1999–2026</text>
+
+  <!-- Title section -->
+  <rect x="60" y="160" width="12" height="12" fill="#2F5233" />
+  <text x="82" y="172" font-family="sans-serif" font-size="14" fill="#6F6D66" font-weight="bold" letter-spacing="1.5">OFFICIAL STUDY RELEASE</text>
+
+  <foreignObject x="60" y="210" width="680" height="350">
+    <div xmlns="http://www.w3.org/1999/xhtml" style="font-family: Georgia, serif; font-size: 56px; font-weight: 700; color: #171717; line-height: 1.1; letter-spacing: -1px;">
+      GATE CSE 2027 PYQ Workbook
+    </div>
+  </foreignObject>
+
+  <!-- Center Graphic Accent -->
+  <rect x="60" y="580" width="680" height="2" fill="#DAD7CE" />
+  
+  <g transform="translate(60, 620)">
+    <!-- Geometric editorial glyphs -->
+    <rect x="0" y="0" width="120" height="120" fill="#2F5233" opacity="0.1" stroke="#2F5233" stroke-width="2" />
+    <circle cx="60" cy="60" r="40" fill="none" stroke="#2F5233" stroke-width="2" />
+    <line x1="20" y1="60" x2="100" y2="60" stroke="#2F5233" stroke-width="2" />
+    <line x1="60" y1="20" x2="60" y2="100" stroke="#2F5233" stroke-width="2" />
+
+    <text x="150" y="35" font-family="sans-serif" font-size="18" font-weight="bold" fill="#171717">Verified Digital Publication</text>
+    <text x="150" y="65" font-family="sans-serif" font-size="15" fill="#6F6D66">Trap-checked · Fully worked steps · Virtual calc ready</text>
+    <text x="150" y="95" font-family="monospace" font-size="14" fill="#344BB0">#GATE2027 · #DIRECT_DOWNLOAD</text>
+  </g>
+
+  <!-- Bottom author & seal -->
+  <line x1="60" y1="880" x2="740" y2="880" stroke="#171717" stroke-width="1.5" />
+  <text x="60" y="930" font-family="sans-serif" font-size="28" font-weight="600" fill="#171717">by Gatewala</text>
+  <text x="60" y="960" font-family="monospace" font-size="14" fill="#6F6D66">ISSUED BY BYLINE.STORE · VERIFIED ARCHIVE</text>
+
+  <rect x="620" y="900" width="120" height="42" rx="4" fill="#171717" />
+  <text x="680" y="927" text-anchor="middle" font-family="sans-serif" font-size="15" font-weight="bold" fill="#F2F1EC">PDF EDITION</text>
+</svg>
