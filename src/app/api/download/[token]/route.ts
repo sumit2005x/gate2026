@@ -15,7 +15,15 @@ export async function GET(
       return new NextResponse("Invalid or expired download link", { status: 404 });
     }
 
-    // Determine file location
+    // If file is stored in Cloudflare R2 or external cloud storage
+    if (
+      product.digitalFileUrl.startsWith("http://") ||
+      product.digitalFileUrl.startsWith("https://")
+    ) {
+      return NextResponse.redirect(product.digitalFileUrl);
+    }
+
+    // Determine local file location
     let relativePath = product.digitalFileUrl;
     if (relativePath.startsWith("/")) {
       relativePath = relativePath.slice(1);
