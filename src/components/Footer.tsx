@@ -35,16 +35,6 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/categories" className="hover:text-ink transition-colors">
-                  Topics
-                </Link>
-              </li>
-              <li>
-                <Link href="/authors" className="hover:text-ink transition-colors">
-                  Creators
-                </Link>
-              </li>
-              <li>
                 <Link href="/purchases" className="hover:text-ink transition-colors">
                   My purchases
                 </Link>

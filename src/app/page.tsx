@@ -54,9 +54,6 @@ export default function HomePage() {
                 <span className="bg-paper-2 border border-rule px-2.5 py-0.5 rounded-full text-ink font-mono text-[11px]">
                   {allProducts.length} titles
                 </span>
-                <span className="bg-paper-2 border border-rule px-2.5 py-0.5 rounded-full text-ink font-mono text-[11px]">
-                  {creators.length} creator
-                </span>
               </div>
 
               {/* Headline */}
@@ -218,57 +215,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SECTION: CREATORS */}
-        <section className="py-16 sm:py-20 border-b border-rule">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-rule">
-              <div>
-                <span className="num-pill block mb-1">04 · AUTHORS</span>
-                <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink tracking-tight">
-                  Creators
-                </h2>
-              </div>
-              <Link
-                href="/authors"
-                className="text-sm font-medium text-ink hover:underline underline-offset-4 flex items-center gap-1"
-              >
-                <span>Everyone</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {creators.map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/@${c.handle}`}
-                  className="p-6 rounded-2xl border border-rule bg-paper hover:bg-paper-2 transition-all flex items-start gap-5 group"
-                >
-                  <div className="w-16 h-16 rounded-full bg-accent text-white flex items-center justify-center font-serif text-2xl font-bold shrink-0">
-                    {c.name.charAt(0)}
-                  </div>
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-serif text-xl font-bold text-ink group-hover:underline">
-                        {c.name}
-                      </h3>
-                      {c.verified && (
-                        <span className="text-[10px] font-mono bg-accent/10 text-accent px-1.5 py-0.5 rounded">
-                          VERIFIED CREATOR
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-xs font-mono text-muted">{c.titlesCount} titles published</p>
-                    <p className="text-sm text-ink-2 leading-relaxed pt-1 line-clamp-2">
-                      {c.bio}
-                    </p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* SECTION: NEWSLETTER SIGNUP */}
         <section className="py-20 border-b border-rule bg-paper-2/40">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-2xl space-y-6">
@@ -276,7 +222,7 @@ export default function HomePage() {
               New titles, once a month. <em className="font-normal italic">Nothing else.</em>
             </h2>
             <p className="text-sm text-ink-2">
-              Get notified when top educators and rankers release new question banks and cheat sheets.
+              Get notified when new question banks and cheat sheets are released.
             </p>
             <NewsletterForm />
           </div>
@@ -286,7 +232,7 @@ export default function HomePage() {
         <section id="faq" className="py-16 sm:py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-12 text-center space-y-2">
-              <span className="num-pill">05 · ANSWERS</span>
+              <span className="num-pill">04 · ANSWERS</span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink">
                 Questions
               </h2>

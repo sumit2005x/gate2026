@@ -28,18 +28,6 @@ export default function Navbar() {
             >
               Browse
             </Link>
-            <Link
-              href="/categories"
-              className="hover:text-ink transition-colors"
-            >
-              Topics
-            </Link>
-            <Link
-              href="/authors"
-              className="hover:text-ink transition-colors"
-            >
-              Creators
-            </Link>
           </nav>
         </div>
 
@@ -96,20 +84,6 @@ export default function Navbar() {
             className="block text-ink font-medium text-base py-1"
           >
             Browse all PDFs
-          </Link>
-          <Link
-            href="/categories"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-ink font-medium text-base py-1"
-          >
-            Topics
-          </Link>
-          <Link
-            href="/authors"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-ink font-medium text-base py-1"
-          >
-            Creators
           </Link>
           <Link
             href="/purchases"
