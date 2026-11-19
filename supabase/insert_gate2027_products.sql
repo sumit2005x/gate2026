@@ -161,5 +161,10 @@ ON CONFLICT (id) DO UPDATE SET
   sample_pages = EXCLUDED.sample_pages,
   digital_file_url = EXCLUDED.digital_file_url,
   sample_pdf_url = EXCLUDED.sample_pdf_url,
+  sales_count = EXCLUDED.sales_count,
   featured = EXCLUDED.featured,
   published = EXCLUDED.published;
+
+-- Reset sales counter for all products to zero
+UPDATE public.products SET sales_count = 0;
+
