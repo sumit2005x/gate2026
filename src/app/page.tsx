@@ -8,6 +8,9 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
 import { ArrowRight, BookOpen, ShieldCheck, Download, Sparkles, Check, ChevronDown } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function HomePage() {
   const allProducts = isSupabaseConfigured()
     ? await supabaseDb.getProducts({ includeUnpublished: false })

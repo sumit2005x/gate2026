@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(req: NextRequest) {
   try {

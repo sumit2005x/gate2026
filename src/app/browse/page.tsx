@@ -31,7 +31,9 @@ export default function BrowsePage() {
         if (search) params.append("search", search);
         if (sortBy) params.append("sort", sortBy);
 
-        const res = await fetch(`/api/products?${params.toString()}`);
+        const res = await fetch(`/api/products?${params.toString()}`, {
+          cache: "no-store",
+        });
         const data = await res.json();
         if (data.success) {
           setProducts(data.products);

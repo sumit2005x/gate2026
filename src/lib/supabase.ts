@@ -1,19 +1,30 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL ||
-  "";
-const supabaseAnonKey =
-  process.env.SUPABASE_ANON_KEY ||
-  process.env.SUPABASE_PUBLISHABLE_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
-  "";
-const supabaseServiceKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  process.env.SUPABASE_SECRET_KEY ||
-  supabaseAnonKey;
+export function getSupabaseUrl(): string {
+  return (
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    ""
+  );
+}
+
+export function getSupabaseAnonKey(): string {
+  return (
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    ""
+  );
+}
+
+export function getSupabaseServiceKey(): string {
+  return (
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_SECRET_KEY ||
+    getSupabaseAnonKey()
+  );
+}
 
 export const BUCKET_PUBLIC = "products-public";
 export const BUCKET_LOCKED = "products-locked";
@@ -22,12 +33,14 @@ export const BUCKET_LOCKED = "products-locked";
  * Check whether Supabase environment variables are configured
  */
 export function isSupabaseConfigured(): boolean {
+  const url = getSupabaseUrl();
+  const anon = getSupabaseAnonKey();
   return Boolean(
-    supabaseUrl &&
-    supabaseUrl.startsWith("https://") &&
-    !supabaseUrl.includes("your-project") &&
-    supabaseAnonKey &&
-    !supabaseAnonKey.includes("your-anon-key")
+    url &&
+    url.startsWith("https://") &&
+    !url.includes("your-project") &&
+    anon &&
+    !anon.includes("your-anon-key")
   );
 }
 
@@ -36,7 +49,7 @@ export function isSupabaseConfigured(): boolean {
  */
 export function getSupabaseClient() {
   if (!isSupabaseConfigured()) return null;
-  return createClient(supabaseUrl, supabaseAnonKey, {
+  return createClient(getSupabaseUrl(), getSupabaseAnonKey(), {
     auth: { persistSession: false },
   });
 }
@@ -47,7 +60,7 @@ export function getSupabaseClient() {
  */
 export function getSupabaseAdmin() {
   if (!isSupabaseConfigured()) return null;
-  return createClient(supabaseUrl, supabaseServiceKey || supabaseAnonKey, {
+  return createClient(getSupabaseUrl(), getSupabaseServiceKey() || getSupabaseAnonKey(), {
     auth: { persistSession: false },
   });
 }

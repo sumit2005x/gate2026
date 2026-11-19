@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function GET(
   req: NextRequest,
@@ -63,6 +67,17 @@ export async function PUT(
         { success: false, error: "Product not found" },
         { status: 404 }
       );
+    }
+
+    try {
+      revalidatePath("/");
+      revalidatePath("/browse");
+      revalidatePath("/admin");
+      if (updated.slug) {
+        revalidatePath(`/p/${updated.slug}`);
+      }
+    } catch (revErr) {
+      console.warn("Revalidation error:", revErr);
     }
 
     return NextResponse.json({ success: true, product: updated });

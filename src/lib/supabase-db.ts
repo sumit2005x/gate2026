@@ -117,15 +117,28 @@ export const supabaseDb = {
     const supabaseProducts = (!error && data) ? data.map(mapProduct) : [];
     const localProducts = db.getProducts(options);
 
-    // Merge: Supabase products override local products with the same id or slug
-    const mergedMap = new Map<string, DigitalProduct>();
-    for (const p of localProducts) {
-      mergedMap.set(p.slug, p);
-    }
+    // Merge: Supabase products override local products with the same ID or slug
+    const finalProducts: DigitalProduct[] = [];
+    const seenSlugs = new Set<string>();
+    const seenIds = new Set<string>();
+
+    // 1. Supabase products are authoritative
     for (const p of supabaseProducts) {
-      mergedMap.set(p.slug, p);
+      seenIds.add(p.id);
+      seenSlugs.add(p.slug);
+      finalProducts.push(p);
     }
-    return Array.from(mergedMap.values());
+
+    // 2. Include any local products that aren't already represented in Supabase
+    for (const p of localProducts) {
+      if (!seenIds.has(p.id) && !seenSlugs.has(p.slug)) {
+        seenIds.add(p.id);
+        seenSlugs.add(p.slug);
+        finalProducts.push(p);
+      }
+    }
+
+    return finalProducts;
   },
 
   async getProductById(id: string): Promise<DigitalProduct | null> {
@@ -167,7 +180,7 @@ export const supabaseDb = {
     const id = `prod-${Math.random().toString(36).substring(2, 9)}`;
     const now = new Date().toISOString();
 
-    const insertData = {
+    const insertData: any = {
       id,
       slug: product.slug,
       title: product.title,
@@ -200,11 +213,22 @@ export const supabaseDb = {
       updated_at: now,
     };
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("products")
       .insert(insertData)
       .select()
       .single();
+
+    if (error && (error.message.includes("payment_link_url") || error.code === "PGRST204")) {
+      delete insertData.payment_link_url;
+      const retry = await supabase
+        .from("products")
+        .insert(insertData)
+        .select()
+        .single();
+      data = retry.data;
+      error = retry.error;
+    }
 
     if (error) {
       throw new Error(`Failed to create product: ${error.message}`);
@@ -231,26 +255,98 @@ export const supabaseDb = {
     if (updates.coverUrl !== undefined) updateData.cover_url = updates.coverUrl;
     if (updates.digitalFileUrl !== undefined) updateData.digital_file_url = updates.digitalFileUrl;
     if (updates.samplePdfUrl !== undefined) updateData.sample_pdf_url = updates.samplePdfUrl;
-    if (updates.paymentLinkUrl !== undefined) updateData.payment_link_url = updates.paymentLinkUrl;
     if (updates.salesCount !== undefined) updateData.sales_count = updates.salesCount;
     if (updates.published !== undefined) updateData.published = updates.published;
     if (updates.featured !== undefined) updateData.featured = updates.featured;
     if (updates.jacketStyle !== undefined) updateData.jacket_style = updates.jacketStyle;
+    if (updates.paymentLinkUrl !== undefined) updateData.payment_link_url = updates.paymentLinkUrl;
 
-    const { data, error } = await supabase
+    let { data, error } = await supabase
       .from("products")
       .update(updateData)
       .or(`id.eq.${id},slug.eq.${id}`)
       .select();
 
+    // If update failed due to payment_link_url column not existing in Supabase yet, retry without it
+    if (error && (error.message.includes("payment_link_url") || error.code === "PGRST204")) {
+      delete updateData.payment_link_url;
+      const retry = await supabase
+        .from("products")
+        .update(updateData)
+        .or(`id.eq.${id},slug.eq.${id}`)
+        .select();
+      data = retry.data;
+      error = retry.error;
+    }
+
     if (error) {
       console.warn("Supabase updateProduct warning:", error.message);
-      return null;
     }
-    if (!data || data.length === 0) {
-      return null;
+
+    if (data && data.length > 0) {
+      return mapProduct(data[0]);
     }
-    return mapProduct(data[0]);
+
+    // If product was not in Supabase, upsert it from local DB so changes are permanently stored in Supabase
+    const localProd = db.getProductById(id) || db.getProductBySlug(id);
+    if (localProd) {
+      const fullProductToUpsert: any = {
+        id: localProd.id,
+        slug: updates.slug || localProd.slug,
+        title: updates.title || localProd.title,
+        subtitle: updates.subtitle !== undefined ? updates.subtitle : localProd.subtitle,
+        description: updates.description !== undefined ? updates.description : localProd.description,
+        price: updates.price !== undefined ? updates.price : localProd.price,
+        compare_at_price: updates.compareAtPrice !== undefined ? updates.compareAtPrice : localProd.compareAtPrice,
+        format: updates.format || localProd.format,
+        page_count: updates.pageCount !== undefined ? updates.pageCount : localProd.pageCount,
+        file_size: updates.fileSize || localProd.fileSize,
+        language: updates.language || localProd.language,
+        delivery: updates.delivery || localProd.delivery,
+        access: updates.access || localProd.access,
+        refunds: updates.refunds || localProd.refunds,
+        category: updates.category || localProd.category,
+        creator_name: updates.creatorName || localProd.creatorName,
+        creator_handle: updates.creatorHandle || localProd.creatorHandle,
+        creator_avatar: updates.creatorAvatar || localProd.creatorAvatar,
+        cover_url: updates.coverUrl || localProd.coverUrl,
+        jacket_style: updates.jacketStyle || localProd.jacketStyle,
+        jacket_color: updates.jacketColor || localProd.jacketColor,
+        sample_pages: updates.samplePages || localProd.samplePages,
+        digital_file_url: updates.digitalFileUrl || localProd.digitalFileUrl,
+        sample_pdf_url: updates.samplePdfUrl || localProd.samplePdfUrl,
+        sales_count: updates.salesCount !== undefined ? updates.salesCount : localProd.salesCount,
+        featured: updates.featured !== undefined ? updates.featured : localProd.featured,
+        published: updates.published !== undefined ? updates.published : localProd.published,
+        created_at: localProd.createdAt || new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      if (updates.paymentLinkUrl !== undefined) {
+        fullProductToUpsert.payment_link_url = updates.paymentLinkUrl;
+      }
+
+      let { data: upsertData, error: upsertErr } = await supabase
+        .from("products")
+        .upsert(fullProductToUpsert)
+        .select();
+
+      if (upsertErr && (upsertErr.message.includes("payment_link_url") || upsertErr.code === "PGRST204")) {
+        delete fullProductToUpsert.payment_link_url;
+        const retryUpsert = await supabase
+          .from("products")
+          .upsert(fullProductToUpsert)
+          .select();
+        upsertData = retryUpsert.data;
+        upsertErr = retryUpsert.error;
+      }
+
+      if (!upsertErr && upsertData && upsertData.length > 0) {
+        return mapProduct(upsertData[0]);
+      }
+    }
+
+    return null;
   },
 
   async deleteProduct(id: string): Promise<boolean> {
@@ -337,7 +433,7 @@ export const supabaseDb = {
     const orderId = `BD-${randomSuffix}`;
     const token = `tok-${randomSuffix}-${Math.random().toString(36).substring(2, 9)}`;
 
-    const insertData = {
+    const insertData: any = {
       id: orderId,
       product_id: order.productId,
       product_title: order.productTitle,
@@ -459,7 +555,7 @@ export const supabaseDb = {
     if (!supabase) throw new Error("Supabase admin client not initialized");
 
     const id = `cp-${Date.now()}`;
-    const insertData = {
+    const insertData: any = {
       id,
       code: coupon.code.toUpperCase().trim(),
       discount_type: coupon.discountType,

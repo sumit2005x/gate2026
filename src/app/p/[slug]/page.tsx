@@ -9,6 +9,9 @@ import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
 import { ShieldCheck, Download, Share2, ArrowLeft } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export function generateStaticParams() {
   const products = db.getProducts({ includeUnpublished: true });
   return products.map((p) => ({

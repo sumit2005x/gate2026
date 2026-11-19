@@ -166,9 +166,9 @@ export default function AdminDashboard() {
     setLoading(true);
     try {
       const [prodRes, ordRes, statRes] = await Promise.all([
-        fetch("/api/products?all=true"),
-        fetch("/api/admin/orders"),
-        fetch("/api/admin/stats"),
+        fetch("/api/products?all=true", { cache: "no-store" }),
+        fetch("/api/admin/orders", { cache: "no-store" }),
+        fetch("/api/admin/stats", { cache: "no-store" }),
       ]);
 
       const prodData = await prodRes.json();
@@ -394,6 +394,15 @@ export default function AdminDashboard() {
           )
         );
         setEditSuccessMessage("Product updated successfully!");
+
+        // Refresh fresh data from database in background
+        fetch("/api/products?all=true", { cache: "no-store" })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success && d.products) setProducts(d.products);
+          })
+          .catch(() => {});
+
         setTimeout(() => {
           setEditModalOpen(false);
           setEditingProduct(null);
