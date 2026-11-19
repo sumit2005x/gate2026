@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Trash2,
   Eye,
+  EyeOff,
   RefreshCw,
   ArrowRight,
   ShieldCheck,
@@ -347,22 +348,34 @@ export default function AdminDashboard() {
     }
   };
 
-  // Toggle Publish
+  // Toggle Visibility (Hide / Unhide product on store)
   const handleTogglePublish = async (p: DigitalProduct) => {
+    const nextPublished = !p.published;
     try {
       const res = await fetch(`/api/products/${p.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ published: !p.published }),
+        body: JSON.stringify({ published: nextPublished }),
       });
       const data = await res.json();
-      if (data.success) {
+      if (data.success && data.product) {
         setProducts((prev) =>
-          prev.map((item) => (item.id === p.id ? data.product : item))
+          prev.map((item) =>
+            item.id === p.id ? { ...item, published: nextPublished } : item
+          )
         );
+        // Background sync to ensure freshness
+        fetch("/api/products?all=true", { cache: "no-store" })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.success && d.products) setProducts(d.products);
+          })
+          .catch(() => {});
+      } else {
+        alert(data.error || "Failed to update product visibility");
       }
     } catch (err) {
-      alert("Failed to update status");
+      alert("Failed to update product visibility");
     }
   };
 
@@ -1091,6 +1104,17 @@ export default function AdminDashboard() {
                 <h2 className="font-serif text-3xl font-bold text-ink">
                   Published Titles ({products.length})
                 </h2>
+                <div className="flex items-center gap-3 mt-1.5 text-xs font-mono">
+                  <span className="inline-flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    {products.filter((p) => p.published).length} Visible
+                  </span>
+                  <span className="text-muted">·</span>
+                  <span className="inline-flex items-center gap-1.5 text-amber-600 dark:text-amber-400">
+                    <span className="w-2 h-2 rounded-full bg-amber-500" />
+                    {products.filter((p) => !p.published).length} Hidden
+                  </span>
+                </div>
               </div>
 
               <div className="flex items-center gap-3">
@@ -1157,17 +1181,50 @@ export default function AdminDashboard() {
                         <td className="p-4 font-semibold text-accent">{p.salesCount} sold</td>
                         <td className="p-4">
                           <button
+                            type="button"
                             onClick={() => handleTogglePublish(p)}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold transition-all cursor-pointer shadow-xs ${
                               p.published
-                                ? "bg-emerald-100 text-emerald-800"
-                                : "bg-gray-200 text-gray-700"
+                                ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/25"
+                                : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 hover:bg-amber-500/25"
                             }`}
+                            title={
+                              p.published
+                                ? "Currently VISIBLE on store. Click to HIDE from store."
+                                : "Currently HIDDEN from store. Click to UNHIDE on store."
+                            }
                           >
-                            {p.published ? "Active" : "Draft"}
+                            {p.published ? (
+                              <>
+                                <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                                <span>Visible</span>
+                              </>
+                            ) : (
+                              <>
+                                <EyeOff className="w-3.5 h-3.5 text-amber-500" />
+                                <span>Hidden</span>
+                              </>
+                            )}
                           </button>
                         </td>
                         <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
+                          {/* 1-Click Hide/Unhide action */}
+                          <button
+                            type="button"
+                            onClick={() => handleTogglePublish(p)}
+                            className={`p-1.5 inline-block rounded transition-colors cursor-pointer ${
+                              p.published
+                                ? "text-muted hover:text-amber-500 hover:bg-amber-500/10"
+                                : "text-amber-500 hover:text-emerald-500 hover:bg-emerald-500/10"
+                            }`}
+                            title={p.published ? "Hide from store" : "Unhide on store"}
+                          >
+                            {p.published ? (
+                              <EyeOff className="w-4 h-4" />
+                            ) : (
+                              <Eye className="w-4 h-4" />
+                            )}
+                          </button>
                           <button
                             onClick={() => handleStartEdit(p)}
                             className="p-1.5 inline-block text-muted hover:text-accent hover:bg-paper-2 rounded transition-colors"
@@ -1181,7 +1238,7 @@ export default function AdminDashboard() {
                             className="p-1.5 inline-block text-muted hover:text-ink hover:bg-paper-2 rounded transition-colors"
                             title="View on store"
                           >
-                            <Eye className="w-4 h-4" />
+                            <ExternalLink className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
@@ -1841,31 +1898,55 @@ export default function AdminDashboard() {
                 />
               </div>
 
-              {/* Section 6: Visibility */}
+              {/* Section 6: Visibility & Store Status */}
               <div className="space-y-3 pt-2">
                 <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
-                  <span>6. Visibility &amp; Status</span>
-                  <span className="text-muted text-[10px] font-normal uppercase">Publishing</span>
+                  <span>6. Visibility &amp; Store Status</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Catalog Status</span>
                 </h4>
-                <div className="flex flex-wrap gap-6 text-xs">
-                  <label className="flex items-center gap-2 cursor-pointer">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <label className="flex items-start gap-3 p-3.5 rounded-xl border border-rule bg-paper cursor-pointer hover:border-accent/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={editForm.published}
                       onChange={(e) => setEditForm({ ...editForm, published: e.target.checked })}
-                      className="w-4 h-4 rounded border-rule text-accent focus:ring-accent"
+                      className="mt-0.5 w-4 h-4 rounded border-rule text-accent focus:ring-accent"
                     />
-                    <span className="font-semibold text-ink">Active / Published</span>
+                    <div>
+                      <span className="font-semibold text-ink flex items-center gap-1.5">
+                        {editForm.published ? (
+                          <>
+                            <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                            <span className="text-emerald-600 dark:text-emerald-400">Visible on Store</span>
+                          </>
+                        ) : (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5 text-amber-500" />
+                            <span className="text-amber-600 dark:text-amber-400">Hidden from Store (Unlisted)</span>
+                          </>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        {editForm.published
+                          ? "Customers can discover and purchase this title on homepage, catalog and search."
+                          : "Hidden from homepage, catalog and search. Only direct admins can see it."}
+                      </span>
+                    </div>
                   </label>
 
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex items-start gap-3 p-3.5 rounded-xl border border-rule bg-paper cursor-pointer hover:border-accent/50 transition-colors">
                     <input
                       type="checkbox"
                       checked={editForm.featured}
                       onChange={(e) => setEditForm({ ...editForm, featured: e.target.checked })}
-                      className="w-4 h-4 rounded border-rule text-accent focus:ring-accent"
+                      className="mt-0.5 w-4 h-4 rounded border-rule text-accent focus:ring-accent"
                     />
-                    <span className="font-semibold text-ink">Featured on Homepage</span>
+                    <div>
+                      <span className="font-semibold text-ink block">Featured on Homepage</span>
+                      <span className="text-[10px] text-muted block mt-0.5">
+                        Highlight this product in the top curated showcase section on the homepage.
+                      </span>
+                    </div>
                   </label>
                 </div>
               </div>
