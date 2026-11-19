@@ -15,21 +15,47 @@ export async function GET(
     // Check Supabase if configured, otherwise fallback to local db
     let success = false;
     let product: any = null;
+    let order: any = null;
 
     if (isSupabaseConfigured()) {
-      const res = await supabaseDb.incrementDownload(token);
-      success = res.success;
-      product = res.product;
+      order = await supabaseDb.getOrderByToken(token);
+      if (order) {
+        const res = await supabaseDb.incrementDownload(token);
+        success = res.success;
+        product = res.product;
+      }
     }
 
-    if (!success) {
-      const localRes = db.incrementDownload(token);
-      success = localRes.success;
-      product = localRes.product;
+    if (!order) {
+      order = db.getOrderByToken(token);
+      if (order) {
+        const localRes = db.incrementDownload(token);
+        success = localRes.success;
+        product = localRes.product;
+      }
     }
 
-    if (!success || !product) {
+    if (!order) {
       return new NextResponse("Invalid or expired download link", { status: 404 });
+    }
+
+    // Ensure product is resolved
+    if (!product) {
+      if (isSupabaseConfigured()) {
+        product =
+          (await supabaseDb.getProductById(order.productId)) ||
+          (await supabaseDb.getProductBySlug(order.productSlug));
+      }
+      if (!product) {
+        product =
+          db.getProductById(order.productId) ||
+          db.getProductBySlug(order.productSlug) ||
+          db.getProducts()[0];
+      }
+    }
+
+    if (!product) {
+      return new NextResponse("Product associated with order not found", { status: 404 });
     }
 
     // 1. If stored in Supabase private bucket

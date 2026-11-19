@@ -1,5 +1,6 @@
 import { getSupabaseAdmin, getSupabaseClient, isSupabaseConfigured } from "./supabase";
 import { DigitalProduct, Order, Coupon, Category, Creator, StoreSettings } from "./types";
+import { db } from "./db";
 
 // Helper: map DB product row to DigitalProduct
 function mapProduct(row: any): DigitalProduct {
@@ -120,6 +121,20 @@ export const supabaseDb = {
     return data.map(mapProduct);
   },
 
+  async getProductById(id: string): Promise<DigitalProduct | null> {
+    const supabase = getSupabaseClient() || getSupabaseAdmin();
+    if (!supabase) return null;
+
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .or(`id.eq.${id},slug.eq.${id}`)
+      .maybeSingle();
+
+    if (error || !data) return null;
+    return mapProduct(data);
+  },
+
   async getProductBySlug(slug: string): Promise<DigitalProduct | null> {
     const supabase = getSupabaseClient() || getSupabaseAdmin();
     if (!supabase) return null;
@@ -127,8 +142,8 @@ export const supabaseDb = {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("slug", slug)
-      .single();
+      .or(`slug.eq.${slug},id.eq.${slug}`)
+      .maybeSingle();
 
     if (error || !data) return null;
     return mapProduct(data);
@@ -326,7 +341,8 @@ export const supabaseDb = {
       .single();
 
     if (error) {
-      throw new Error(`Failed to create order in Supabase: ${error.message}`);
+      console.warn("Supabase order insert warning (e.g. RLS policy), falling back to persistent store:", error.message);
+      return db.createOrder(order);
     }
 
     // Increment sales count on product

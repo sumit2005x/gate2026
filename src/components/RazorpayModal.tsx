@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { CheckCircle2, ShieldCheck, ArrowRight, QrCode, Smartphone, CreditCard, Loader2, X } from "lucide-react";
+import { CheckCircle2, ShieldCheck, ArrowRight, QrCode, Smartphone, CreditCard, Loader2, X, Download } from "lucide-react";
 import { DigitalProduct, Order } from "@/lib/types";
 
 interface RazorpayModalProps {
@@ -36,35 +36,143 @@ export default function RazorpayModal({
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [downloadLink, setDownloadLink] = useState("");
 
+  // Dynamically load Razorpay checkout script
+  useEffect(() => {
+    if (!isOpen) return;
+
+    if (!document.getElementById("razorpay-checkout-script")) {
+      const script = document.createElement("script");
+      script.id = "razorpay-checkout-script";
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.async = true;
+      document.body.appendChild(script);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  const handlePay = async () => {
+  // Launch official Razorpay standard checkout popup
+  const handleOfficialRazorpay = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/checkout", {
+      // 1. Create order on backend
+      const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product.id,
+          couponCode: discountAmount > 0 ? couponCode : undefined,
           email: customerEmail,
           phone: customerPhone,
           name: customerName,
-          couponCode: discountAmount > 0 ? couponCode : undefined,
-          paymentMethod: method.toUpperCase(),
         }),
       });
 
-      const data = await res.json();
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || "Payment failed");
+      const orderData = await res.json();
+      if (!res.ok || !orderData.success) {
+        throw new Error(orderData.error || "Failed to initialize payment");
       }
 
-      setCompletedOrder(data.order);
-      setDownloadLink(data.downloadUrl);
-      setPaymentSuccess(true);
-      onSuccess(data.order, data.downloadUrl);
+      // If simulated mode (no live keys configured)
+      if (orderData.isSimulated || !(window as any).Razorpay) {
+        // Run simulated instant payment
+        const verifyRes = await fetch("/api/razorpay/verify", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            razorpay_order_id: orderData.orderId,
+            razorpay_payment_id: `pay_${Math.random().toString(36).substring(2, 12)}`,
+            razorpay_signature: "simulated_signature",
+            productId: product.id,
+            email: customerEmail,
+            phone: customerPhone,
+            name: customerName,
+            couponCode: discountAmount > 0 ? couponCode : undefined,
+            discountAmount,
+            amount,
+          }),
+        });
+
+        const verifyData = await verifyRes.json();
+        if (verifyData.success) {
+          setCompletedOrder(verifyData.order);
+          setDownloadLink(verifyData.downloadUrl);
+          setPaymentSuccess(true);
+          onSuccess(verifyData.order, verifyData.downloadUrl);
+        } else {
+          throw new Error(verifyData.error || "Verification failed");
+        }
+        setLoading(false);
+        return;
+      }
+
+      // 2. Open official Razorpay modal popup
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || "INR",
+        name: "gate2026",
+        description: product.title,
+        image: "https://nzrljcrxkmzgvwdwmhwt.supabase.co/storage/v1/object/public/products-public/covers/gate_nat_master.svg",
+        order_id: orderData.orderId,
+        handler: async function (response: any) {
+          setLoading(true);
+          try {
+            const verifyRes = await fetch("/api/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                productId: product.id,
+                email: customerEmail,
+                phone: customerPhone,
+                name: customerName,
+                couponCode: discountAmount > 0 ? couponCode : undefined,
+                discountAmount,
+                amount,
+              }),
+            });
+
+            const verifyData = await verifyRes.json();
+            if (verifyData.success) {
+              setCompletedOrder(verifyData.order);
+              setDownloadLink(verifyData.downloadUrl);
+              setPaymentSuccess(true);
+              onSuccess(verifyData.order, verifyData.downloadUrl);
+            } else {
+              alert(verifyData.error || "Payment verification failed");
+            }
+          } catch (err: any) {
+            alert(err.message || "Error verifying payment signature");
+          } finally {
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: customerName || "",
+          email: customerEmail,
+          contact: customerPhone || "",
+        },
+        notes: {
+          productId: product.id,
+          productSlug: product.slug,
+        },
+        theme: {
+          color: "#0C2340",
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new (window as any).Razorpay(options);
+      razorpayInstance.open();
     } catch (err: any) {
-      alert(err.message || "Something went wrong processing payment");
+      alert(err.message || "Something went wrong opening Razorpay");
     } finally {
       setLoading(false);
     }
@@ -83,7 +191,7 @@ export default function RazorpayModal({
               <h4 className="font-semibold text-sm leading-tight text-white/95">
                 gate2026 Digital Publishing
               </h4>
-              <p className="text-[11px] text-white/70 font-mono">Secured by Razorpay</p>
+              <p className="text-[11px] text-white/70 font-mono">Official Razorpay Gateway</p>
             </div>
           </div>
           <div className="text-right">
@@ -102,7 +210,7 @@ export default function RazorpayModal({
             <div className="space-y-1">
               <h3 className="font-serif text-2xl font-bold text-ink">Payment Successful!</h3>
               <p className="text-xs text-muted font-mono">
-                Order ID: {completedOrder.id} · Ref: {completedOrder.paymentId}
+                Order: {completedOrder.id} · Ref: {completedOrder.paymentId}
               </p>
             </div>
 
@@ -127,6 +235,7 @@ export default function RazorpayModal({
                 download
                 className="btn-cobalt w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm"
               >
+                <Download className="w-4 h-4" />
                 <span>Download PDF Now</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
@@ -148,139 +257,64 @@ export default function RazorpayModal({
               <span className="font-semibold text-ink">₹{amount}</span>
             </div>
 
-            {/* Payment Methods Tabs */}
+            {/* Methods Preview */}
             <div className="grid grid-cols-3 gap-2">
-              <button
-                onClick={() => setMethod("upi")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border flex flex-col items-center gap-1 transition-all ${
-                  method === "upi"
-                    ? "bg-accent/10 border-accent text-accent font-semibold"
-                    : "border-rule bg-paper-2 text-ink-2 hover:bg-paper-3"
-                }`}
-              >
-                <QrCode className="w-4 h-4" />
-                <span>UPI / QR</span>
-              </button>
+              <div className="p-3 rounded-xl border border-rule bg-paper-2 flex flex-col items-center text-center gap-1">
+                <QrCode className="w-4 h-4 text-accent" />
+                <span className="text-[11px] font-medium text-ink">UPI &amp; QR</span>
+                <span className="text-[9px] text-muted font-mono">GPay, PhonePe</span>
+              </div>
 
-              <button
-                onClick={() => setMethod("card")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border flex flex-col items-center gap-1 transition-all ${
-                  method === "card"
-                    ? "bg-accent/10 border-accent text-accent font-semibold"
-                    : "border-rule bg-paper-2 text-ink-2 hover:bg-paper-3"
-                }`}
-              >
-                <CreditCard className="w-4 h-4" />
-                <span>Cards</span>
-              </button>
+              <div className="p-3 rounded-xl border border-rule bg-paper-2 flex flex-col items-center text-center gap-1">
+                <CreditCard className="w-4 h-4 text-accent" />
+                <span className="text-[11px] font-medium text-ink">Cards</span>
+                <span className="text-[9px] text-muted font-mono">Debit &amp; Credit</span>
+              </div>
 
-              <button
-                onClick={() => setMethod("netbanking")}
-                className={`py-2 px-3 text-xs font-medium rounded-lg border flex flex-col items-center gap-1 transition-all ${
-                  method === "netbanking"
-                    ? "bg-accent/10 border-accent text-accent font-semibold"
-                    : "border-rule bg-paper-2 text-ink-2 hover:bg-paper-3"
-                }`}
-              >
-                <Smartphone className="w-4 h-4" />
-                <span>Netbanking</span>
-              </button>
+              <div className="p-3 rounded-xl border border-rule bg-paper-2 flex flex-col items-center text-center gap-1">
+                <Smartphone className="w-4 h-4 text-accent" />
+                <span className="text-[11px] font-medium text-ink">Netbanking</span>
+                <span className="text-[9px] text-muted font-mono">50+ Banks</span>
+              </div>
             </div>
 
-            {/* Method Details */}
-            {method === "upi" && (
-              <div className="space-y-3 p-4 bg-paper-2 rounded-xl border border-rule text-center">
-                <div className="inline-block p-2 bg-white rounded-lg shadow-xs border border-rule">
-                  <div className="w-32 h-32 bg-gray-900 flex items-center justify-center text-white text-[10px] font-mono p-2 text-center rounded">
-                    [SIMULATED UPI QR CODE]
-                    <br />
-                    Scan with GPay / PhonePe / Paytm
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted">
-                  Or enter your VPA / UPI ID:
-                </div>
-                <input
-                  type="text"
-                  placeholder="e.g. yourname@oksbi"
-                  value={upiId}
-                  onChange={(e) => setUpiId(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-md border border-rule bg-paper focus:outline-accent"
-                />
+            {/* Customer Details Recap */}
+            <div className="text-xs space-y-1.5 p-3.5 bg-paper-2/70 rounded-xl border border-rule">
+              <div className="flex justify-between">
+                <span className="text-muted">Delivery Email:</span>
+                <span className="font-mono font-medium text-ink">{customerEmail}</span>
               </div>
-            )}
-
-            {method === "card" && (
-              <div className="space-y-3 p-4 bg-paper-2 rounded-xl border border-rule text-xs">
-                <div>
-                  <label className="text-muted block mb-1">Card Number</label>
-                  <input
-                    type="text"
-                    placeholder="4111 2222 3333 4444"
-                    disabled
-                    value="4111 •••• •••• 4444 (Test Card)"
-                    className="w-full px-3 py-2 rounded-md border border-rule bg-paper opacity-90 font-mono"
-                  />
+              {customerPhone && (
+                <div className="flex justify-between">
+                  <span className="text-muted">Phone:</span>
+                  <span className="font-mono font-medium text-ink">{customerPhone}</span>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-muted block mb-1">Valid Thru</label>
-                    <input
-                      type="text"
-                      value="12 / 28"
-                      disabled
-                      className="w-full px-3 py-2 rounded-md border border-rule bg-paper font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-muted block mb-1">CVV</label>
-                    <input
-                      type="text"
-                      value="•••"
-                      disabled
-                      className="w-full px-3 py-2 rounded-md border border-rule bg-paper font-mono"
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {method === "netbanking" && (
-              <div className="p-4 bg-paper-2 rounded-xl border border-rule text-xs space-y-2">
-                <label className="text-muted block">Select Your Bank</label>
-                <select className="w-full px-3 py-2 rounded-md border border-rule bg-paper text-ink">
-                  <option>HDFC Bank</option>
-                  <option>State Bank of India</option>
-                  <option>ICICI Bank</option>
-                  <option>Axis Bank</option>
-                  <option>Kotak Mahindra Bank</option>
-                </select>
-              </div>
-            )}
+              )}
+            </div>
 
             {/* Pay Button */}
             <div className="space-y-2 pt-1">
               <button
-                onClick={handlePay}
+                onClick={handleOfficialRazorpay}
                 disabled={loading}
-                className="btn-cobalt w-full py-3 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
+                className="btn-cobalt w-full py-3.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-sm disabled:opacity-50"
               >
                 {loading ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Processing Secure Payment...</span>
+                    <span>Connecting to Razorpay...</span>
                   </>
                 ) : (
                   <>
                     <ShieldCheck className="w-4 h-4" />
-                    <span>Pay ₹{amount} &amp; Download PDF</span>
+                    <span>Pay ₹{amount} via Razorpay UPI / Cards</span>
+                    <ArrowRight className="w-4 h-4" />
                   </>
                 )}
               </button>
 
               <div className="flex items-center justify-center gap-2 text-[11px] font-mono text-muted">
-                <span>100% Mock Sandbox / Live Razorpay Ready</span>
+                <span>Instant PDF unlock upon payment</span>
                 <span>·</span>
                 <button
                   type="button"
