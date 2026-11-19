@@ -14,7 +14,7 @@ export default function Navbar() {
         <div className="flex items-center gap-8">
           <Link href="/" className="flex items-center gap-2 group">
             <span className="font-serif text-2xl font-bold tracking-tight text-ink group-hover:opacity-90">
-              Byline
+              gate2026
             </span>
             <span className="text-[11px] font-mono tracking-widest text-muted border border-rule px-1.5 py-0.5 rounded">
               STORE

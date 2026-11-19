@@ -10,7 +10,7 @@ export default function Footer() {
           <div className="md:col-span-2 space-y-4">
             <Link href="/" className="inline-block">
               <span className="font-serif text-3xl font-bold tracking-tight text-ink">
-                Byline
+                gate2026
               </span>
             </Link>
             <p className="text-[15px] text-ink-2 max-w-sm leading-relaxed">
@@ -105,14 +105,14 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t border-rule mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-muted">
-          <p>© 2026 Byline. Made in India, delivered as PDF.</p>
+          <p>© 2026 gate2026. Made in India, delivered as PDF.</p>
           <div className="flex items-center gap-4">
             <span className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-accent" />
               <span>Payments secured by Razorpay &amp; UPI</span>
             </span>
             <span>·</span>
-            <span>Operated by Byline</span>
+            <span>Operated by gate2026</span>
           </div>
         </div>
       </div>

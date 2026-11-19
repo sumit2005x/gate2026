@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Byline — Study PDFs, notes and guides, instant download",
+  title: "gate2026 — Study PDFs, notes and guides, instant download",
   description:
     "Independent digital publishing. Notes, cheat sheets and guides made by people who have been through the exam. Pay by UPI, download instantly, keep them forever in your library.",
   icons: {

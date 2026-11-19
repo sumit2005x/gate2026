@@ -16,7 +16,7 @@ export default function NewsletterForm() {
   if (subscribed) {
     return (
       <p className="text-xs font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 py-2.5 px-4 rounded-full inline-block">
-        ✓ You are subscribed to Byline monthly dispatches ({email}).
+        ✓ You are subscribed to gate2026 monthly dispatches ({email}).
       </p>
     );
   }

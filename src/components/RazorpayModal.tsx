@@ -77,11 +77,11 @@ export default function RazorpayModal({
         <div className="bg-[#0C2340] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center font-bold text-white text-base">
-              B
+              G
             </div>
             <div>
               <h4 className="font-semibold text-sm leading-tight text-white/95">
-                Byline Digital Publishing
+                gate2026 Digital Publishing
               </h4>
               <p className="text-[11px] text-white/70 font-mono">Secured by Razorpay</p>
             </div>

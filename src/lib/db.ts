@@ -15,7 +15,7 @@ interface DatabaseSchema {
 }
 
 const DEFAULT_SETTINGS: StoreSettings = {
-  storeName: "Byline",
+  storeName: "gate2026",
   tagline: "Independent digital publishing",
   established: "Est. 2026 · India",
   currency: "INR",

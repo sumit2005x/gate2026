@@ -92,6 +92,17 @@ export default function AdminDashboard() {
     minAmount: 50,
   });
 
+  // Settings State
+  const [settingsForm, setSettingsForm] = useState({
+    storeName: "gate2026",
+    tagline: "Independent digital publishing",
+    supportEmail: "lessgo.dsa@gmail.com",
+    adminPin: "1234",
+    razorpayKeyId: "rzp_test_byline_demo",
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [settingsSavedMessage, setSettingsSavedMessage] = useState("");
+
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const coverInputRef = useRef<HTMLInputElement>(null);
 
@@ -134,6 +145,15 @@ export default function AdminDashboard() {
         setStats(statData.stats);
         setCoupons(statData.coupons || []);
         setCategories(statData.categories || []);
+        if (statData.settings) {
+          setSettingsForm({
+            storeName: statData.settings.storeName || "gate2026",
+            tagline: statData.settings.tagline || "",
+            supportEmail: statData.settings.supportEmail || "",
+            adminPin: statData.settings.adminPin || "1234",
+            razorpayKeyId: statData.settings.razorpayKeyId || "",
+          });
+        }
       }
     } catch (err) {
       console.error("Error loading admin data:", err);
@@ -337,6 +357,28 @@ export default function AdminDashboard() {
     }
   };
 
+  // Save Settings
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingSettings(true);
+    setSettingsSavedMessage("");
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settingsForm),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSettingsSavedMessage("Store settings updated successfully!");
+      }
+    } catch {
+      alert("Failed to update settings");
+    } finally {
+      setSavingSettings(false);
+    }
+  };
+
   // PIN Login Gate
   if (!authenticated) {
     return (
@@ -348,7 +390,7 @@ export default function AdminDashboard() {
 
           <div className="space-y-1">
             <h2 className="font-serif text-3xl font-bold text-ink">
-              Byline Admin
+              {settingsForm.storeName} Admin
             </h2>
             <p className="text-xs font-mono text-muted">
               Enter master PIN to manage &amp; upload digital products
@@ -396,7 +438,7 @@ export default function AdminDashboard() {
       <header className="sticky top-0 z-40 bg-ink text-paper border-b border-ink/80 px-4 sm:px-8 py-3.5 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Link href="/" className="font-serif text-xl font-bold text-paper">
-            Byline
+            {settingsForm.storeName}
           </Link>
           <span className="text-[11px] font-mono bg-paper/10 text-paper/80 border border-white/20 px-2 py-0.5 rounded">
             ADMIN CONSOLE
@@ -484,6 +526,18 @@ export default function AdminDashboard() {
           >
             <BarChart3 className="w-4 h-4" />
             <span>Analytics</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("settings")}
+            className={`flex items-center gap-2 px-4 py-2 text-xs font-mono rounded-lg transition-colors whitespace-nowrap ${
+              activeTab === "settings"
+                ? "bg-accent text-white font-semibold"
+                : "bg-paper-2 text-ink-2 hover:bg-paper-3"
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+            <span>Settings</span>
           </button>
         </div>
 
@@ -813,7 +867,7 @@ export default function AdminDashboard() {
                   ) : (
                     <>
                       <Upload className="w-4 h-4" />
-                      <span>Publish to Byline Store</span>
+                      <span>Publish to {settingsForm.storeName} Store</span>
                     </>
                   )}
                 </button>
@@ -1170,6 +1224,122 @@ export default function AdminDashboard() {
                 <p className="text-[11px] font-mono text-muted">Lifetime student accesses</p>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* TAB 6: SETTINGS */}
+        {activeTab === "settings" && (
+          <div className="max-w-3xl space-y-6">
+            <div>
+              <span className="num-pill block mb-1">CONFIGURATION</span>
+              <h2 className="font-serif text-3xl font-bold text-ink">
+                Store Settings
+              </h2>
+              <p className="text-sm text-ink-2">
+                Manage your store identity, currency, payment credentials, and master security PIN.
+              </p>
+            </div>
+
+            {settingsSavedMessage && (
+              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-mono flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>{settingsSavedMessage}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSaveSettings} className="p-6 sm:p-8 rounded-2xl border border-rule bg-paper-2/60 space-y-5">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1.5 font-semibold">
+                    Store Brand Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={settingsForm.storeName}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, storeName: e.target.value })
+                    }
+                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink font-semibold focus:outline-accent"
+                  />
+                  <p className="text-[11px] font-mono text-muted mt-1">
+                    Displays in the header navigation, footer, receipts, and meta tags.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1.5 font-semibold">
+                    Tagline
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.tagline}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, tagline: e.target.value })
+                    }
+                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink focus:outline-accent"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-muted mb-1.5 font-semibold">
+                      Support Email
+                    </label>
+                    <input
+                      type="email"
+                      value={settingsForm.supportEmail}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, supportEmail: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink focus:outline-accent"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-muted mb-1.5 font-semibold">
+                      Admin Master PIN
+                    </label>
+                    <input
+                      type="text"
+                      value={settingsForm.adminPin}
+                      onChange={(e) =>
+                        setSettingsForm({ ...settingsForm, adminPin: e.target.value })
+                      }
+                      className="w-full px-4 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink font-mono focus:outline-accent"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase text-muted mb-1.5 font-semibold">
+                    Razorpay Key ID
+                  </label>
+                  <input
+                    type="text"
+                    value={settingsForm.razorpayKeyId}
+                    onChange={(e) =>
+                      setSettingsForm({ ...settingsForm, razorpayKeyId: e.target.value })
+                    }
+                    className="w-full px-4 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink font-mono focus:outline-accent"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-rule flex items-center justify-between">
+                <button
+                  type="submit"
+                  disabled={savingSettings}
+                  className="btn-cobalt py-2.5 px-6 rounded-full text-xs font-semibold shadow-sm"
+                >
+                  {savingSettings ? "Saving Settings..." : "Save Store Settings"}
+                </button>
+
+                <span className="text-xs font-mono text-muted">
+                  Saves directly to database
+                </span>
+              </div>
+            </form>
           </div>
         )}
       </div>
