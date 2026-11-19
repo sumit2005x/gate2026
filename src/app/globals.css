@@ -1,7 +1,29 @@
 @import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=Newsreader:ital,opsz,wght@0,6..72,300..800;1,6..72,300..800&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Geist+Mono:wght@300;400;500;600&display=swap');
 @import "tailwindcss";
 
-:root {
+:root,
+[data-theme="dark"],
+.dark {
+  --paper: #0A0B0E;
+  --paper-2: #14161C;
+  --paper-3: #1D2029;
+  --ink: #F9FAFB;
+  --ink-2: #A1A1AA;
+  --muted: #71717A;
+  --rule: #232734;
+  --accent: #3B82F6;
+  --accent-2: #60A5FA;
+  --accent-ink: #FFFFFF;
+  
+  --font-sans: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: 'Newsreader', Georgia, serif;
+  --font-display: 'Bodoni Moda', Georgia, serif;
+  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+  color-scheme: dark;
+}
+
+[data-theme="light"],
+.light {
   --paper: #F2F1EC;
   --paper-2: #E7E5DE;
   --paper-3: #FBFAF7;
@@ -12,11 +34,7 @@
   --accent: #344BB0;
   --accent-2: #5268C9;
   --accent-ink: #F2F1EC;
-  
-  --font-sans: 'Bricolage Grotesque', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  --font-serif: 'Newsreader', Georgia, serif;
-  --font-display: 'Bodoni Moda', Georgia, serif;
-  --font-mono: 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
+  color-scheme: light;
 }
 
 @theme {
@@ -67,7 +85,7 @@ body {
   content: "";
   position: absolute;
   inset: 2px -4px -4px 4px;
-  background-color: #dfdcd3;
+  background-color: var(--paper-2);
   border: 1px solid var(--rule);
   border-radius: 12px;
   z-index: 0;
@@ -85,7 +103,7 @@ body {
   border: 1px solid var(--rule);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(23, 23, 23, 0.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
 }
 
 .jacket-in {
@@ -154,7 +172,7 @@ body {
 
 .btn-line:hover {
   border-color: var(--ink);
-  background-color: rgba(23, 23, 23, 0.03);
+  background-color: var(--paper-2);
 }
 
 /* Numbered badge pill */

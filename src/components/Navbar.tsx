@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Menu, X } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,7 +33,9 @@ export default function Navbar() {
         </div>
 
         {/* Right Navigation & CTAs */}
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-3">
+          <ThemeToggle />
+
           <Link
             href="/purchases"
             className="text-[14px] text-ink-2 hover:text-ink font-medium px-3 py-1.5 transition-colors"
@@ -49,8 +52,9 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Mobile menu button */}
+        {/* Mobile menu button & toggle */}
         <div className="flex sm:hidden items-center gap-2">
+          <ThemeToggle />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-ink hover:bg-paper-2 rounded-lg"
