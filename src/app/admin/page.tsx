@@ -22,6 +22,9 @@ import {
   ArrowRight,
   ShieldCheck,
   Check,
+  Pencil,
+  X,
+  RotateCcw,
 } from "lucide-react";
 import { DigitalProduct, Order, Coupon, Category } from "@/lib/types";
 
@@ -84,6 +87,38 @@ export default function AdminDashboard() {
   const [savingProduct, setSavingProduct] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Edit Product State
+  const [editingProduct, setEditingProduct] = useState<DigitalProduct | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    slug: "",
+    subtitle: "",
+    description: "",
+    price: 79,
+    compareAtPrice: 99 as number | null,
+    category: "GATE Preparation",
+    creatorName: "Gatewala",
+    creatorHandle: "gatewala",
+    pageCount: 150,
+    fileSize: "6.5 MB",
+    language: "English",
+    format: "1 PDF",
+    jacketStyle: "swiss" as "swiss" | "classic" | "minimal" | "modern",
+    jacketColor: "#344BB0",
+    coverUrl: "",
+    digitalFileUrl: "",
+    samplePdfUrl: "",
+    paymentLinkUrl: "",
+    salesCount: 0,
+    featured: false,
+    published: true,
+  });
+  const [updatingProduct, setUpdatingProduct] = useState(false);
+  const [editSuccessMessage, setEditSuccessMessage] = useState("");
+  const [editErrorMessage, setEditErrorMessage] = useState("");
+  const [resettingAllSales, setResettingAllSales] = useState(false);
 
   // New Coupon Form State
   const [couponForm, setCouponForm] = useState({
@@ -300,6 +335,96 @@ export default function AdminDashboard() {
       }
     } catch (err) {
       alert("Failed to update status");
+    }
+  };
+
+  // Start editing product
+  const handleStartEdit = (product: DigitalProduct) => {
+    setEditingProduct(product);
+    setEditForm({
+      title: product.title || "",
+      slug: product.slug || "",
+      subtitle: product.subtitle || "",
+      description: product.description || "",
+      price: product.price ?? 0,
+      compareAtPrice: product.compareAtPrice ?? null,
+      category: product.category || "GATE Preparation",
+      creatorName: product.creatorName || "Gatewala",
+      creatorHandle: product.creatorHandle || "gatewala",
+      pageCount: product.pageCount || 0,
+      fileSize: product.fileSize || "",
+      language: product.language || "English",
+      format: product.format || "PDF Document",
+      jacketStyle: (product.jacketStyle as any) || "swiss",
+      jacketColor: product.jacketColor || "#344BB0",
+      coverUrl: product.coverUrl || "",
+      digitalFileUrl: product.digitalFileUrl || "",
+      samplePdfUrl: product.samplePdfUrl || "",
+      paymentLinkUrl: product.paymentLinkUrl || "",
+      salesCount: product.salesCount ?? 0,
+      featured: Boolean(product.featured),
+      published: Boolean(product.published),
+    });
+    setEditSuccessMessage("");
+    setEditErrorMessage("");
+    setEditModalOpen(true);
+  };
+
+  // Save product edits
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProduct) return;
+
+    setUpdatingProduct(true);
+    setEditSuccessMessage("");
+    setEditErrorMessage("");
+
+    try {
+      const res = await fetch(`/api/products/${editingProduct.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editForm),
+      });
+
+      const data = await res.json();
+      if (data.success && data.product) {
+        setProducts((prev) =>
+          prev.map((item) =>
+            item.id === editingProduct.id ? { ...item, ...data.product } : item
+          )
+        );
+        setEditSuccessMessage("Product updated successfully!");
+        setTimeout(() => {
+          setEditModalOpen(false);
+          setEditingProduct(null);
+        }, 800);
+      } else {
+        setEditErrorMessage(data.error || "Failed to update product");
+      }
+    } catch (err: any) {
+      setEditErrorMessage(err.message || "Failed to update product");
+    } finally {
+      setUpdatingProduct(false);
+    }
+  };
+
+  // Reset sales count of all products
+  const handleResetAllSales = async () => {
+    if (!confirm("Are you sure you want to reset all products' sold count to 0?")) return;
+    setResettingAllSales(true);
+    try {
+      const res = await fetch("/api/admin/reset-sales", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setProducts((prev) => prev.map((p) => ({ ...p, salesCount: 0 })));
+        alert("All product sold counts have been reset to zero!");
+      } else {
+        alert(data.error || "Failed to reset sales counts");
+      }
+    } catch (err) {
+      alert("Failed to reset sales counts");
+    } finally {
+      setResettingAllSales(false);
     }
   };
 
@@ -902,7 +1027,7 @@ export default function AdminDashboard() {
         {/* TAB 2: ALL PRODUCTS */}
         {activeTab === "products" && (
           <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="num-pill block mb-1">INVENTORY</span>
                 <h2 className="font-serif text-3xl font-bold text-ink">
@@ -910,13 +1035,26 @@ export default function AdminDashboard() {
                 </h2>
               </div>
 
-              <button
-                onClick={() => setActiveTab("upload")}
-                className="btn-ink text-xs py-2 px-4 rounded-full"
-              >
-                <PlusCircle className="w-3.5 h-3.5" />
-                <span>Upload New</span>
-              </button>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleResetAllSales}
+                  disabled={resettingAllSales}
+                  className="btn-paper border border-rule text-xs py-2 px-3.5 rounded-full flex items-center gap-1.5 text-muted hover:text-ink transition-colors cursor-pointer"
+                  title="Reset all products sold counter to 0"
+                >
+                  <RotateCcw className={`w-3.5 h-3.5 ${resettingAllSales ? "animate-spin" : ""}`} />
+                  <span>Reset All Sold Counts to 0</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveTab("upload")}
+                  className="btn-ink text-xs py-2 px-4 rounded-full"
+                >
+                  <PlusCircle className="w-3.5 h-3.5" />
+                  <span>Upload New</span>
+                </button>
+              </div>
             </div>
 
             <div className="rounded-2xl border border-rule bg-paper overflow-hidden shadow-xs">
@@ -971,18 +1109,25 @@ export default function AdminDashboard() {
                             {p.published ? "Active" : "Draft"}
                           </button>
                         </td>
-                        <td className="p-4 text-right space-x-2">
+                        <td className="p-4 text-right space-x-1.5 whitespace-nowrap">
+                          <button
+                            onClick={() => handleStartEdit(p)}
+                            className="p-1.5 inline-block text-muted hover:text-accent hover:bg-paper-2 rounded transition-colors"
+                            title="Edit product"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </button>
                           <Link
                             href={`/p/${p.slug}`}
                             target="_blank"
-                            className="p-1.5 inline-block text-muted hover:text-ink hover:bg-paper-2 rounded"
+                            className="p-1.5 inline-block text-muted hover:text-ink hover:bg-paper-2 rounded transition-colors"
                             title="View on store"
                           >
                             <Eye className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => handleDeleteProduct(p.id)}
-                            className="p-1.5 text-muted hover:text-red-600 hover:bg-red-50 rounded"
+                            className="p-1.5 text-muted hover:text-red-600 hover:bg-red-50 rounded transition-colors"
                             title="Delete"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1362,6 +1507,335 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* EDIT PRODUCT MODAL */}
+      {editModalOpen && editingProduct && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-ink/70 backdrop-blur-sm animate-in fade-in">
+          <div className="relative w-full max-w-3xl max-h-[92vh] bg-paper rounded-2xl shadow-2xl border border-rule flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-rule bg-paper-2 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-accent/10 text-accent flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-ink text-lg leading-tight">
+                    Edit Product
+                  </h3>
+                  <p className="text-xs font-mono text-muted line-clamp-1">
+                    {editingProduct.title} · <span className="opacity-75">{editingProduct.id}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setEditModalOpen(false);
+                  setEditingProduct(null);
+                }}
+                className="p-1.5 text-muted hover:text-ink hover:bg-paper-3 rounded-full transition-colors cursor-pointer"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <form onSubmit={handleSaveEdit} className="p-6 overflow-y-auto space-y-6 flex-1 text-xs font-mono">
+              {editSuccessMessage && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>{editSuccessMessage}</span>
+                </div>
+              )}
+              {editErrorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-800 rounded-lg flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  <span>{editErrorMessage}</span>
+                </div>
+              )}
+
+              {/* Section 1: Basic Information */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>1. Title &amp; Classification</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Core Details</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Title</label>
+                    <input
+                      type="text"
+                      value={editForm.title}
+                      onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-sm font-sans focus:outline-accent"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">URL Slug</label>
+                    <input
+                      type="text"
+                      value={editForm.slug}
+                      onChange={(e) => setEditForm({ ...editForm, slug: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Category</label>
+                    <select
+                      value={editForm.category}
+                      onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                    >
+                      <option value="GATE Preparation">GATE Preparation</option>
+                      <option value="Computer Science">Computer Science</option>
+                      <option value="Data Analytics & AI">Data Analytics & AI</option>
+                      <option value="Electronics & Comm.">Electronics & Comm.</option>
+                    </select>
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Subtitle / Summary</label>
+                    <input
+                      type="text"
+                      value={editForm.subtitle}
+                      onChange={(e) => setEditForm({ ...editForm, subtitle: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-sans focus:outline-accent"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 2: Pricing & Sold Counter */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>2. Pricing &amp; Sold Counter</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Commercial</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Selling Price (₹ INR)</label>
+                    <input
+                      type="number"
+                      value={editForm.price}
+                      onChange={(e) => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-sm font-bold focus:outline-accent"
+                      required
+                      min={0}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Compare At (₹ INR)</label>
+                    <input
+                      type="number"
+                      value={editForm.compareAtPrice ?? ""}
+                      onChange={(e) =>
+                        setEditForm({
+                          ...editForm,
+                          compareAtPrice: e.target.value ? Number(e.target.value) : null,
+                        })
+                      }
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-sm focus:outline-accent"
+                      placeholder="Optional"
+                      min={0}
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between">
+                      <label className="text-muted uppercase text-[11px] font-semibold">Sold Count</label>
+                      <button
+                        type="button"
+                        onClick={() => setEditForm({ ...editForm, salesCount: 0 })}
+                        className="text-[10px] text-accent underline hover:text-ink cursor-pointer"
+                        title="Reset this product's sold count to 0"
+                      >
+                        Reset to 0
+                      </button>
+                    </div>
+                    <input
+                      type="number"
+                      value={editForm.salesCount}
+                      onChange={(e) => setEditForm({ ...editForm, salesCount: Number(e.target.value) })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-sm font-bold focus:outline-accent"
+                      min={0}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 3: Files & Delivery */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>3. Files, Previews &amp; Payment Link</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Assets</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Digital File URL (Download Asset)</label>
+                    <input
+                      type="text"
+                      value={editForm.digitalFileUrl}
+                      onChange={(e) => setEditForm({ ...editForm, digitalFileUrl: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      required
+                    />
+                    <span className="text-[10px] text-muted block">
+                      Local file path (e.g. /downloads/GATE_CSE_2027_Ultimate_Ranker_Mock_Bundle.zip) or Cloud URL
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Cover Image URL</label>
+                    <input
+                      type="text"
+                      value={editForm.coverUrl}
+                      onChange={(e) => setEditForm({ ...editForm, coverUrl: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Sample PDF URL</label>
+                    <input
+                      type="text"
+                      value={editForm.samplePdfUrl}
+                      onChange={(e) => setEditForm({ ...editForm, samplePdfUrl: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      placeholder="Optional"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2 space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Direct Razorpay Payment Link (Optional)</label>
+                    <input
+                      type="text"
+                      value={editForm.paymentLinkUrl}
+                      onChange={(e) => setEditForm({ ...editForm, paymentLinkUrl: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      placeholder="e.g. https://rzp.io/l/my-custom-payment-link"
+                    />
+                    <span className="text-[10px] text-muted block">
+                      If set, buyers clicking Buy will be directed immediately to this Razorpay payment link.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 4: Specifications */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>4. Format &amp; Specifications</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Attributes</span>
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Format Label</label>
+                    <input
+                      type="text"
+                      value={editForm.format}
+                      onChange={(e) => setEditForm({ ...editForm, format: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      placeholder="e.g. 1 PDF · 380 pages"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">Page Count</label>
+                    <input
+                      type="number"
+                      value={editForm.pageCount}
+                      onChange={(e) => setEditForm({ ...editForm, pageCount: Number(e.target.value) })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-muted uppercase text-[11px] font-semibold">File Size</label>
+                    <input
+                      type="text"
+                      value={editForm.fileSize}
+                      onChange={(e) => setEditForm({ ...editForm, fileSize: e.target.value })}
+                      className="w-full p-2.5 border border-rule rounded-lg bg-paper text-ink text-xs font-mono focus:outline-accent"
+                      placeholder="e.g. 29.9 MB ZIP"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Section 5: Description */}
+              <div className="space-y-4">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>5. Full Description</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Marketing Copy</span>
+                </h4>
+                <textarea
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                  rows={8}
+                  className="w-full p-3 border border-rule rounded-lg bg-paper text-ink text-xs leading-relaxed font-sans focus:outline-accent"
+                />
+              </div>
+
+              {/* Section 6: Visibility */}
+              <div className="space-y-3 pt-2">
+                <h4 className="font-semibold text-ink text-sm border-b border-rule pb-2 flex items-center justify-between">
+                  <span>6. Visibility &amp; Status</span>
+                  <span className="text-muted text-[10px] font-normal uppercase">Publishing</span>
+                </h4>
+                <div className="flex flex-wrap gap-6 text-xs">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editForm.published}
+                      onChange={(e) => setEditForm({ ...editForm, published: e.target.checked })}
+                      className="w-4 h-4 rounded border-rule text-accent focus:ring-accent"
+                    />
+                    <span className="font-semibold text-ink">Active / Published</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editForm.featured}
+                      onChange={(e) => setEditForm({ ...editForm, featured: e.target.checked })}
+                      className="w-4 h-4 rounded border-rule text-accent focus:ring-accent"
+                    />
+                    <span className="font-semibold text-ink">Featured on Homepage</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Modal Footer */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-rule shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditModalOpen(false);
+                    setEditingProduct(null);
+                  }}
+                  className="btn-paper border border-rule px-5 py-2.5 rounded-full text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingProduct}
+                  className="btn-cobalt px-6 py-2.5 rounded-full text-xs font-semibold shadow-md disabled:opacity-50 cursor-pointer"
+                >
+                  {updatingProduct ? "Saving Changes..." : "Save Changes"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

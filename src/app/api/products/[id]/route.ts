@@ -42,9 +42,16 @@ export async function PUT(
 
     let updated = null;
     if (isSupabaseConfigured()) {
-      updated = await supabaseDb.updateProduct(id, body);
-    } else {
-      updated = db.updateProduct(id, body);
+      try {
+        updated = await supabaseDb.updateProduct(id, body);
+      } catch (e) {
+        console.error("Supabase updateProduct error:", e);
+      }
+    }
+
+    const localUpdated = db.updateProduct(id, body);
+    if (!updated) {
+      updated = localUpdated;
     }
 
     if (!updated) {

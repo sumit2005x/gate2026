@@ -219,8 +219,10 @@ export const supabaseDb = {
 
     const updateData: any = { updated_at: new Date().toISOString() };
     if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.slug !== undefined) updateData.slug = updates.slug;
     if (updates.subtitle !== undefined) updateData.subtitle = updates.subtitle;
     if (updates.description !== undefined) updateData.description = updates.description;
+    if (updates.category !== undefined) updateData.category = updates.category;
     if (updates.price !== undefined) updateData.price = updates.price;
     if (updates.compareAtPrice !== undefined) updateData.compare_at_price = updates.compareAtPrice;
     if (updates.format !== undefined) updateData.format = updates.format;
@@ -228,7 +230,9 @@ export const supabaseDb = {
     if (updates.fileSize !== undefined) updateData.file_size = updates.fileSize;
     if (updates.coverUrl !== undefined) updateData.cover_url = updates.coverUrl;
     if (updates.digitalFileUrl !== undefined) updateData.digital_file_url = updates.digitalFileUrl;
+    if (updates.samplePdfUrl !== undefined) updateData.sample_pdf_url = updates.samplePdfUrl;
     if (updates.paymentLinkUrl !== undefined) updateData.payment_link_url = updates.paymentLinkUrl;
+    if (updates.salesCount !== undefined) updateData.sales_count = updates.salesCount;
     if (updates.published !== undefined) updateData.published = updates.published;
     if (updates.featured !== undefined) updateData.featured = updates.featured;
     if (updates.jacketStyle !== undefined) updateData.jacket_style = updates.jacketStyle;

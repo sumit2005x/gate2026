@@ -34,11 +34,11 @@
       ],
       "digitalFileUrl": "/downloads/GATE_CSE_2027_Ultimate_Ranker_Mock_Bundle.zip",
       "samplePdfUrl": "/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf",
-      "salesCount": 39,
+      "salesCount": 0,
       "featured": true,
       "published": true,
       "createdAt": "2026-11-19T10:00:00.000Z",
-      "updatedAt": "2026-11-19T10:00:00.000Z"
+      "updatedAt": "2026-11-19T16:23:39.720Z"
     },
     {
       "id": "prod-gate-2027-mocks-cbt",
@@ -72,11 +72,11 @@
       ],
       "digitalFileUrl": "/downloads/GATE_CSE_2027_Ultimate_Ranker_Mock_Bundle.zip",
       "samplePdfUrl": "/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf",
-      "salesCount": 24,
+      "salesCount": 0,
       "featured": false,
       "published": true,
       "createdAt": "2026-11-19T10:00:00.000Z",
-      "updatedAt": "2026-11-19T10:00:00.000Z"
+      "updatedAt": "2026-11-19T16:23:39.725Z"
     },
     {
       "id": "prod-gate-2027-repeated-patterns",
@@ -108,11 +108,11 @@
       ],
       "digitalFileUrl": "/downloads/GATE_CSE_2027_Questions_GATE_Repeats_90Day.pdf",
       "samplePdfUrl": "/sample_downloads/GATE_CSE_2027_Questions_GATE_Repeats_FREE_SAMPLE.pdf",
-      "salesCount": 19,
+      "salesCount": 0,
       "featured": false,
       "published": true,
       "createdAt": "2026-11-19T10:00:00.000Z",
-      "updatedAt": "2026-11-19T10:00:00.000Z"
+      "updatedAt": "2026-11-19T16:23:39.729Z"
     },
     {
       "id": "prod-nat-master",
@@ -142,103 +142,14 @@
       ],
       "digitalFileUrl": "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
       "samplePdfUrl": "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
-      "salesCount": 9,
+      "salesCount": 0,
       "featured": true,
       "published": true,
       "createdAt": "2026-11-18T10:00:00.000Z",
-      "updatedAt": "2026-11-18T10:00:00.000Z"
+      "updatedAt": "2026-11-19T16:23:39.734Z"
     }
   ],
-  "orders": [
-    {
-      "productId": "prod-gate-2027-ultimate-bundle",
-      "productTitle": "GATE CSE 2027 Ultimate Predicted Mock Test Series & Repeated Patterns Bundle",
-      "productSlug": "gate-cse-2027-ultimate-mock-series-repeated-patterns-bundle",
-      "amount": 799,
-      "customerEmail": "student.ranker@gmail.com",
-      "customerPhone": "9988776655",
-      "customerName": "GATE Aspirant",
-      "couponCode": null,
-      "discountAmount": 0,
-      "paymentId": "pay_YMHLAP47",
-      "paymentMethod": "UPI",
-      "paymentStatus": "completed",
-      "id": "BD-410234",
-      "downloadToken": "tok-410234-7mfwi3k",
-      "downloadCount": 1,
-      "createdAt": "2026-11-19T16:02:14.012Z"
-    },
-    {
-      "productId": "prod-gate-nat-2027",
-      "productTitle": "GATE CSE 2027 NAT Master Book: 450 Numerical Answer Type Traps",
-      "productSlug": "gate-cse-2027-nat-master-book",
-      "amount": 499,
-      "customerEmail": "buyer@gate2026.com",
-      "customerPhone": "9876543210",
-      "customerName": "Test Aspirant",
-      "couponCode": null,
-      "discountAmount": 0,
-      "paymentId": "pay_test_456",
-      "paymentMethod": "RAZORPAY_UPI",
-      "paymentStatus": "completed",
-      "id": "BD-253683",
-      "downloadToken": "tok-253683-wflgaz4",
-      "downloadCount": 2,
-      "createdAt": "2026-11-19T14:25:00.975Z"
-    },
-    {
-      "productId": "prod-nat-master",
-      "productTitle": "GATE CSE 2027 NAT Master Book",
-      "productSlug": "gate-cse-2027-nat-master-book",
-      "amount": 63,
-      "customerEmail": "test.aspirant@gmail.com",
-      "customerPhone": "+91 9988776655",
-      "customerName": "Arjun Kumar",
-      "couponCode": "GATE20",
-      "discountAmount": 16,
-      "paymentId": "pay_Z75PAQ8J",
-      "paymentMethod": "UPI",
-      "paymentStatus": "completed",
-      "id": "BD-941144",
-      "downloadToken": "tok-941144-v03bzc6",
-      "downloadCount": 1,
-      "createdAt": "2026-11-19T11:01:04.088Z"
-    },
-    {
-      "id": "BD-904128",
-      "productId": "prod-nat-master",
-      "productTitle": "GATE CSE 2027 NAT Master Book",
-      "productSlug": "gate-cse-2027-nat-master-book",
-      "amount": 79,
-      "customerEmail": "student.gate@gmail.com",
-      "customerPhone": "+91 9876543210",
-      "customerName": "Aakash Sharma",
-      "discountAmount": 0,
-      "paymentId": "pay_Q108928392",
-      "paymentMethod": "UPI",
-      "paymentStatus": "completed",
-      "downloadToken": "tok-904128-abc",
-      "downloadCount": 3,
-      "createdAt": "2026-11-19T06:30:00.000Z"
-    },
-    {
-      "id": "BD-883102",
-      "productId": "prod-ece-bundle",
-      "productTitle": "GATE ECE 2027 · The Complete Pack",
-      "productSlug": "gate-ece-2027-the-complete-pack",
-      "amount": 219,
-      "customerEmail": "priya.ece@yahoo.com",
-      "customerPhone": "+91 9822334455",
-      "customerName": "Priya Nair",
-      "discountAmount": 0,
-      "paymentId": "pay_Q098371283",
-      "paymentMethod": "Card",
-      "paymentStatus": "completed",
-      "downloadToken": "tok-883102-def",
-      "downloadCount": 1,
-      "createdAt": "2026-11-18T18:15:00.000Z"
-    }
-  ],
+  "orders": [],
   "coupons": [
     {
       "id": "c-1",

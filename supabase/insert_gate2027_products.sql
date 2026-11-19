@@ -73,7 +73,7 @@ The most comprehensive, exam-calibrated preparation arsenal ever assembled for G
   '["/previews/gate2027/01_mock_series_cover.png","/previews/gate2027/02_master_toc_calibration.png","/previews/gate2027/03_mock01_question_paper_svg.png","/previews/gate2027/05_mock01_worked_solutions.png","/previews/gate2027/07_cbt_tcs_ion_exam_screen.png","/previews/gate2027/08_cbt_analytics_review.png","/previews/gate2027/repeated_02_roadmap.png","/previews/gate2027/repeated_03_tier_s.png"]'::jsonb,
   '/downloads/GATE_CSE_2027_Ultimate_Ranker_Mock_Bundle.zip',
   '/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf',
-  38,
+  0,
   true,
   true
 ),
@@ -110,7 +110,7 @@ Includes all 10 Predicted Question Papers, 10 detailed Solution Volumes, Master 
   '["/previews/gate2027/01_mock_series_cover.png","/previews/gate2027/02_master_toc_calibration.png","/previews/gate2027/03_mock01_question_paper_svg.png","/previews/gate2027/04_mock01_answer_key_map.png","/previews/gate2027/05_mock01_worked_solutions.png","/previews/gate2027/07_cbt_tcs_ion_exam_screen.png"]'::jsonb,
   '/downloads/GATE_CSE_2027_Ultimate_Ranker_Mock_Bundle.zip',
   '/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf',
-  24,
+  0,
   false,
   true
 ),
@@ -147,7 +147,7 @@ Stop studying blindly. Over 65% of GATE marks come from 60 recurring question pa
   '["/previews/gate2027/repeated_01_cover.png","/previews/gate2027/repeated_02_roadmap.png","/previews/gate2027/repeated_03_tier_s.png","/previews/gate2027/repeated_05_coa_cache.png"]'::jsonb,
   '/downloads/GATE_CSE_2027_Questions_GATE_Repeats_90Day.pdf',
   '/sample_downloads/GATE_CSE_2027_Questions_GATE_Repeats_FREE_SAMPLE.pdf',
-  19,
+  0,
   false,
   true
 )
