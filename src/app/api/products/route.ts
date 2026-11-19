@@ -77,6 +77,7 @@ export async function POST(req: NextRequest) {
       samplePages: body.samplePages || ["/sample_previews/sample_nat_page1.svg"],
       digitalFileUrl: body.digitalFileUrl || "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
       samplePdfUrl: body.samplePdfUrl || body.digitalFileUrl,
+      paymentLinkUrl: body.paymentLinkUrl || undefined,
       featured: Boolean(body.featured),
       published: body.published !== undefined ? Boolean(body.published) : true,
     };

@@ -27,6 +27,7 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
   const [modalOpen, setModalOpen] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [downloadUrl, setDownloadUrl] = useState("");
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
 
   const discountPercent =
     product.compareAtPrice && product.compareAtPrice > product.price
@@ -70,13 +71,42 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
     }
   };
 
-  const handleStartCheckout = (e: React.FormEvent) => {
+  const handleStartCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !email.includes("@")) {
       alert("Please enter a valid email address to receive and access your PDF.");
       return;
     }
-    setModalOpen(true);
+
+    setCheckoutLoading(true);
+    try {
+      // 1. Check if product has a direct Payment Link or if dynamic Payment Link is available
+      const res = await fetch("/api/razorpay/payment-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          productId: product.id,
+          email,
+          phone,
+          name,
+          couponCode: appliedCoupon?.code,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success && data.paymentLink) {
+        // Redirect directly to Razorpay Payment Link
+        window.location.href = data.paymentLink;
+        return;
+      }
+
+      // 2. Fallback: open official Razorpay popup modal
+      setModalOpen(true);
+    } catch {
+      setModalOpen(true);
+    } finally {
+      setCheckoutLoading(false);
+    }
   };
 
   return (
@@ -215,10 +245,17 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
         <div className="pt-2 space-y-3">
           <button
             type="submit"
-            className="btn-cobalt w-full py-3.5 rounded-xl font-medium text-base shadow-sm group"
+            disabled={checkoutLoading}
+            className="btn-cobalt w-full py-3.5 rounded-xl font-medium text-base shadow-sm group disabled:opacity-50"
           >
-            <span>Buy now · ₹{currentPayable}</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            {checkoutLoading ? (
+              <span>Connecting to Razorpay...</span>
+            ) : (
+              <>
+                <span>Buy now · ₹{currentPayable}</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </>
+            )}
           </button>
 
           <div className="flex items-center justify-center gap-1.5 text-[12px] text-muted text-center">

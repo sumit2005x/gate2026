@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Download, CheckCircle2, ShieldCheck, ArrowRight, FileText, AlertCircle } from "lucide-react";
@@ -18,6 +18,32 @@ export default function PurchasesPage() {
   const [searched, setSearched] = useState(false);
   const [orders, setOrders] = useState<EnrichedOrder[]>([]);
   const [error, setError] = useState("");
+  const [successToken, setSuccessToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      const urlEmail = params.get("email");
+      if (token) setSuccessToken(token);
+      if (urlEmail) {
+        setEmail(urlEmail);
+        fetch("/api/purchases", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: urlEmail }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.success && data.orders) {
+              setOrders(data.orders);
+              setSearched(true);
+            }
+          })
+          .catch(() => {});
+      }
+    }
+  }, []);
 
   const handleLookup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +93,30 @@ export default function PurchasesPage() {
               Enter the email you used at checkout, with your optional Order Number or Razorpay Payment ID.
             </p>
           </div>
+
+          {/* Success Banner from Razorpay Payment Link redirect */}
+          {successToken && (
+            <div className="p-6 rounded-2xl border-2 border-emerald-500/40 bg-emerald-500/10 space-y-3 animate-in fade-in">
+              <div className="flex items-center gap-2 text-emerald-900 font-semibold text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span>Payment Received! Your PDF is ready to download.</span>
+              </div>
+              <p className="text-xs text-emerald-800 leading-relaxed">
+                Your purchase has been verified and registered to your email. Click below to begin your download.
+              </p>
+              <div className="pt-1">
+                <a
+                  href={`/api/download/${successToken}`}
+                  download
+                  className="btn-cobalt inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-medium shadow-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  <span>Download Purchased PDF</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* Lookup Form */}
           <form

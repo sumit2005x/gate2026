@@ -65,6 +65,7 @@ export default function AdminDashboard() {
     digitalFileUrl: "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
     samplePdfUrl: "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
     samplePages: ["/samples/sample-page-1.svg", "/samples/sample-page-2.svg"],
+    paymentLinkUrl: "",
     featured: true,
     published: true,
   });
@@ -267,6 +268,7 @@ export default function AdminDashboard() {
           digitalFileUrl: "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
           samplePdfUrl: "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
           samplePages: ["/samples/sample-page-1.svg", "/samples/sample-page-2.svg"],
+          paymentLinkUrl: "",
           featured: true,
           published: true,
         });
@@ -828,6 +830,23 @@ export default function AdminDashboard() {
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
                       className="w-full p-4 text-sm rounded-xl border border-rule bg-paper text-ink focus:outline-accent font-sans leading-relaxed"
                     />
+                  </div>
+
+                  <div className="sm:col-span-2 p-4 bg-paper rounded-xl border border-rule space-y-1.5">
+                    <label className="block text-xs font-mono uppercase text-muted font-semibold flex items-center justify-between">
+                      <span className="text-ink">Direct Payment Link (Optional)</span>
+                      <span className="text-[11px] text-accent lowercase">e.g. https://rzp.io/l/...</span>
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://rzp.io/l/your-link (Leave blank to use automatic checkout)"
+                      value={form.paymentLinkUrl || ""}
+                      onChange={(e) => setForm({ ...form, paymentLinkUrl: e.target.value })}
+                      className="w-full px-4 py-2 text-sm rounded-lg border border-rule bg-paper-2 text-ink font-mono focus:outline-accent"
+                    />
+                    <p className="text-[11px] text-muted">
+                      💡 Paste any pre-created Razorpay Payment Link (or Cosmofeed/Instamojo) here. When students click &quot;Buy now&quot;, they will be redirected directly to this link!
+                    </p>
                   </div>
                 </div>
 

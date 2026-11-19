@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.products (
   sample_pages JSONB DEFAULT '[]'::jsonb,
   digital_file_url TEXT NOT NULL DEFAULT '/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf',
   sample_pdf_url TEXT,
+  payment_link_url TEXT,
   sales_count INTEGER DEFAULT 0,
   featured BOOLEAN DEFAULT false,
   published BOOLEAN DEFAULT true,
@@ -138,6 +139,9 @@ ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.creators ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.store_settings ENABLE ROW LEVEL SECURITY;
+
+-- Ensure payment_link_url column exists for existing tables
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS payment_link_url TEXT;
 
 -- Products: Everyone can view published products
 CREATE POLICY "Anyone can view published products"

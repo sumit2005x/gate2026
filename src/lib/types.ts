@@ -23,6 +23,7 @@ export interface DigitalProduct {
   samplePages: string[];
   digitalFileUrl: string;
   samplePdfUrl?: string;
+  paymentLinkUrl?: string;
   salesCount: number;
   featured: boolean;
   published: boolean;

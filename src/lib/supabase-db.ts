@@ -29,6 +29,7 @@ function mapProduct(row: any): DigitalProduct {
     samplePages: Array.isArray(row.sample_pages) ? row.sample_pages : [],
     digitalFileUrl: row.digital_file_url,
     samplePdfUrl: row.sample_pdf_url || undefined,
+    paymentLinkUrl: row.payment_link_url || undefined,
     salesCount: Number(row.sales_count || 0),
     featured: Boolean(row.featured),
     published: Boolean(row.published),
@@ -181,6 +182,7 @@ export const supabaseDb = {
       sample_pages: product.samplePages,
       digital_file_url: product.digitalFileUrl,
       sample_pdf_url: product.samplePdfUrl,
+      payment_link_url: product.paymentLinkUrl || null,
       sales_count: 0,
       featured: product.featured,
       published: product.published,
@@ -216,6 +218,7 @@ export const supabaseDb = {
     if (updates.fileSize !== undefined) updateData.file_size = updates.fileSize;
     if (updates.coverUrl !== undefined) updateData.cover_url = updates.coverUrl;
     if (updates.digitalFileUrl !== undefined) updateData.digital_file_url = updates.digitalFileUrl;
+    if (updates.paymentLinkUrl !== undefined) updateData.payment_link_url = updates.paymentLinkUrl;
     if (updates.published !== undefined) updateData.published = updates.published;
     if (updates.featured !== undefined) updateData.featured = updates.featured;
     if (updates.jacketStyle !== undefined) updateData.jacket_style = updates.jacketStyle;
