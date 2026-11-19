@@ -105,11 +105,18 @@ export async function GET(
 
     const fileBuffer = fs.readFileSync(fullFilePath);
     const filename = path.basename(fullFilePath);
+    const ext = path.extname(fullFilePath).toLowerCase();
+
+    let contentType = "application/octet-stream";
+    if (ext === ".pdf") contentType = "application/pdf";
+    else if (ext === ".zip") contentType = "application/zip";
+    else if (ext === ".html" || ext === ".htm") contentType = "text/html";
+    else if (ext === ".json") contentType = "application/json";
 
     return new NextResponse(fileBuffer, {
       status: 200,
       headers: {
-        "Content-Type": "application/pdf",
+        "Content-Type": contentType,
         "Content-Disposition": `attachment; filename="${filename}"`,
         "Cache-Control": "no-store, must-revalidate",
       },

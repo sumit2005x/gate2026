@@ -114,17 +114,23 @@ export const supabaseDb = {
     }
 
     const { data, error } = await query;
-    if (error || !data) {
-      console.error("Supabase getProducts error:", error);
-      return [];
-    }
+    const supabaseProducts = (!error && data) ? data.map(mapProduct) : [];
+    const localProducts = db.getProducts(options);
 
-    return data.map(mapProduct);
+    // Merge: Supabase products override local products with the same id or slug
+    const mergedMap = new Map<string, DigitalProduct>();
+    for (const p of localProducts) {
+      mergedMap.set(p.slug, p);
+    }
+    for (const p of supabaseProducts) {
+      mergedMap.set(p.slug, p);
+    }
+    return Array.from(mergedMap.values());
   },
 
   async getProductById(id: string): Promise<DigitalProduct | null> {
     const supabase = getSupabaseClient() || getSupabaseAdmin();
-    if (!supabase) return null;
+    if (!supabase) return db.getProductById(id);
 
     const { data, error } = await supabase
       .from("products")
@@ -132,13 +138,15 @@ export const supabaseDb = {
       .or(`id.eq.${id},slug.eq.${id}`)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return db.getProductById(id) || db.getProductBySlug(id);
+    }
     return mapProduct(data);
   },
 
   async getProductBySlug(slug: string): Promise<DigitalProduct | null> {
     const supabase = getSupabaseClient() || getSupabaseAdmin();
-    if (!supabase) return null;
+    if (!supabase) return db.getProductBySlug(slug);
 
     const { data, error } = await supabase
       .from("products")
@@ -146,7 +154,9 @@ export const supabaseDb = {
       .or(`slug.eq.${slug},id.eq.${slug}`)
       .maybeSingle();
 
-    if (error || !data) return null;
+    if (error || !data) {
+      return db.getProductBySlug(slug) || db.getProductById(slug);
+    }
     return mapProduct(data);
   },
 
