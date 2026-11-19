@@ -99,15 +99,27 @@ export async function DELETE(
 
     if (isSupabaseConfigured()) {
       deleted = await supabaseDb.deleteProduct(id);
-    } else {
-      deleted = db.deleteProduct(id);
     }
+
+    try {
+      const localDel = db.deleteProduct(id);
+      if (!deleted) deleted = localDel;
+    } catch {}
 
     if (!deleted) {
       return NextResponse.json(
         { success: false, error: "Product not found or delete failed" },
         { status: 404 }
       );
+    }
+
+    try {
+      revalidatePath("/");
+      revalidatePath("/browse");
+      revalidatePath("/admin");
+      revalidatePath(`/p/${id}`);
+    } catch (revErr) {
+      console.warn("Revalidation error:", revErr);
     }
 
     return NextResponse.json({ success: true, message: "Product deleted" });

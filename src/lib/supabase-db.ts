@@ -114,31 +114,21 @@ export const supabaseDb = {
     }
 
     const { data, error } = await query;
-    const supabaseProducts = (!error && data) ? data.map(mapProduct) : [];
-    const localProducts = db.getProducts(options);
-
-    // Merge: Supabase products override local products with the same ID or slug
-    const finalProducts: DigitalProduct[] = [];
-    const seenSlugs = new Set<string>();
-    const seenIds = new Set<string>();
-
-    // 1. Supabase products are authoritative
-    for (const p of supabaseProducts) {
-      seenIds.add(p.id);
-      seenSlugs.add(p.slug);
-      finalProducts.push(p);
+    if (error) {
+      console.warn("Supabase getProducts error, falling back to local db:", error.message);
+      return db.getProducts(options);
     }
 
-    // 2. Include any local products that aren't already represented in Supabase
-    for (const p of localProducts) {
-      if (!seenIds.has(p.id) && !seenSlugs.has(p.slug)) {
-        seenIds.add(p.id);
-        seenSlugs.add(p.slug);
-        finalProducts.push(p);
-      }
+    const supabaseProducts = (data || []).map(mapProduct);
+
+    // If Supabase is connected and has products (or search/category returned results),
+    // Supabase is the sole source of truth! Never re-inject deleted products.
+    if (supabaseProducts.length > 0 || options?.category || options?.search || options?.creator) {
+      return supabaseProducts;
     }
 
-    return finalProducts;
+    // Only fallback to local products if Supabase is a completely fresh database with 0 products
+    return db.getProducts(options);
   },
 
   async getProductById(id: string): Promise<DigitalProduct | null> {
@@ -151,10 +141,13 @@ export const supabaseDb = {
       .or(`id.eq.${id},slug.eq.${id}`)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      console.warn("Supabase getProductById error, fallback to local db:", error.message);
       return db.getProductById(id) || db.getProductBySlug(id);
     }
-    return mapProduct(data);
+
+    // If not found in Supabase, the product does not exist or was deleted.
+    return data ? mapProduct(data) : null;
   },
 
   async getProductBySlug(slug: string): Promise<DigitalProduct | null> {
@@ -167,10 +160,13 @@ export const supabaseDb = {
       .or(`slug.eq.${slug},id.eq.${slug}`)
       .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
+      console.warn("Supabase getProductBySlug error, fallback to local db:", error.message);
       return db.getProductBySlug(slug) || db.getProductById(slug);
     }
-    return mapProduct(data);
+
+    // If not found in Supabase, the product does not exist or was deleted.
+    return data ? mapProduct(data) : null;
   },
 
   async createProduct(product: Omit<DigitalProduct, "id" | "createdAt" | "updatedAt" | "salesCount">): Promise<DigitalProduct> {
@@ -353,7 +349,10 @@ export const supabaseDb = {
     const supabase = getSupabaseAdmin();
     if (!supabase) return false;
 
-    const { error } = await supabase.from("products").delete().eq("id", id);
+    const { error } = await supabase
+      .from("products")
+      .delete()
+      .or(`id.eq.${id},slug.eq.${id}`);
     return !error;
   },
 

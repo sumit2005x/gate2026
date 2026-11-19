@@ -473,7 +473,17 @@ export default function AdminDashboard() {
       const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
-        setProducts((prev) => prev.filter((p) => p.id !== id));
+        setProducts((prev) => prev.filter((p) => p.id !== id && p.slug !== id));
+        // Refresh products list from server with no-store
+        try {
+          const freshRes = await fetch("/api/products?all=true", { cache: "no-store" });
+          const freshData = await freshRes.json();
+          if (freshData.success && freshData.products) {
+            setProducts(freshData.products);
+          }
+        } catch {}
+      } else {
+        alert(data.error || "Failed to delete product");
       }
     } catch (err) {
       alert("Failed to delete product");
