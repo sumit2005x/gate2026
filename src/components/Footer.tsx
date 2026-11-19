@@ -63,11 +63,6 @@ export default function Footer() {
                   About
                 </Link>
               </li>
-              <li>
-                <Link href="/admin" className="text-accent font-medium hover:underline">
-                  Admin Dashboard
-                </Link>
-              </li>
             </ul>
           </div>
 

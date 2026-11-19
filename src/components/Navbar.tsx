@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { BookOpen, ShieldCheck, ArrowRight, Menu, X, PlusCircle } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -41,14 +41,6 @@ export default function Navbar() {
           </Link>
 
           <Link
-            href="/admin"
-            className="text-[13px] font-mono bg-paper-2 hover:bg-paper-3 text-ink px-3 py-1.5 rounded-full border border-rule flex items-center gap-1.5 transition-colors"
-          >
-            <PlusCircle className="w-3.5 h-3.5 text-accent" />
-            <span>Admin &amp; Upload</span>
-          </Link>
-
-          <Link
             href="/browse"
             className="btn-ink text-[13px] py-1.5 px-4 rounded-full"
           >
@@ -59,12 +51,6 @@ export default function Navbar() {
 
         {/* Mobile menu button */}
         <div className="flex sm:hidden items-center gap-2">
-          <Link
-            href="/admin"
-            className="text-[12px] font-mono bg-paper-2 text-ink px-2.5 py-1 rounded-full border border-rule"
-          >
-            Admin
-          </Link>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="p-2 text-ink hover:bg-paper-2 rounded-lg"
@@ -91,13 +77,6 @@ export default function Navbar() {
             className="block text-ink font-medium text-base py-1"
           >
             My purchases
-          </Link>
-          <Link
-            href="/admin"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block text-accent font-medium text-base py-1"
-          >
-            Admin Dashboard &amp; Product Upload
           </Link>
         </div>
       )}
