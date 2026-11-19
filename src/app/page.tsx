@@ -4,14 +4,22 @@ import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
 import NewsletterForm from "@/components/NewsletterForm";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 import { ArrowRight, BookOpen, ShieldCheck, Download, Sparkles, Check, ChevronDown } from "lucide-react";
 
-export default function HomePage() {
-  const allProducts = db.getProducts({ includeUnpublished: false });
+export default async function HomePage() {
+  const allProducts = isSupabaseConfigured()
+    ? await supabaseDb.getProducts({ includeUnpublished: false })
+    : db.getProducts({ includeUnpublished: false });
   const featured = allProducts.slice(0, 5);
   const bundles = allProducts.filter((p) => p.format.toLowerCase().includes("bundle"));
-  const categories = db.getCategories();
-  const creators = db.getCreators();
+  const categories = isSupabaseConfigured()
+    ? await supabaseDb.getCategories()
+    : db.getCategories();
+  const creators = isSupabaseConfigured()
+    ? await supabaseDb.getCreators()
+    : db.getCreators();
 
   const faqs = [
     {

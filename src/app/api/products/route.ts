@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function GET(req: NextRequest) {
   try {
@@ -10,13 +12,20 @@ export async function GET(req: NextRequest) {
     const sort = searchParams.get("sort") || undefined;
     const all = searchParams.get("all") === "true";
 
-    const products = db.getProducts({
+    const filterOptions = {
       category,
       creator,
       search,
       sort,
       includeUnpublished: all,
-    });
+    };
+
+    let products = [];
+    if (isSupabaseConfigured()) {
+      products = await supabaseDb.getProducts(filterOptions);
+    } else {
+      products = db.getProducts(filterOptions);
+    }
 
     return NextResponse.json({ success: true, products });
   } catch (error: any) {
@@ -45,7 +54,7 @@ export async function POST(req: NextRequest) {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
 
-    const newProduct = db.createProduct({
+    const productPayload = {
       title: body.title,
       slug,
       subtitle: body.subtitle || "",
@@ -62,16 +71,25 @@ export async function POST(req: NextRequest) {
       category: body.category,
       creatorName: body.creatorName || "Gatewala",
       creatorHandle: body.creatorHandle || "gatewala",
-      coverUrl: body.coverUrl || "/covers/nat-master.svg",
+      coverUrl: body.coverUrl || "/covers/gate_nat_master.svg",
       jacketStyle: body.jacketStyle || "swiss",
       jacketColor: body.jacketColor || "#344BB0",
-      samplePages: body.samplePages || ["/samples/sample-page-1.svg"],
+      samplePages: body.samplePages || ["/sample_previews/sample_nat_page1.svg"],
       digitalFileUrl: body.digitalFileUrl || "/sample_downloads/GATE_CSE_2027_NAT_Master_Book_Sample.pdf",
       samplePdfUrl: body.samplePdfUrl || body.digitalFileUrl,
-      salesCount: 0,
       featured: Boolean(body.featured),
       published: body.published !== undefined ? Boolean(body.published) : true,
-    });
+    };
+
+    let newProduct;
+    if (isSupabaseConfigured()) {
+      newProduct = await supabaseDb.createProduct(productPayload);
+    } else {
+      newProduct = db.createProduct({
+        ...productPayload,
+        salesCount: 0,
+      });
+    }
 
     return NextResponse.json({ success: true, product: newProduct }, { status: 201 });
   } catch (error: any) {

@@ -1,6 +1,7 @@
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import fs from "fs";
 import path from "path";
+import { isSupabaseConfigured, uploadToSupabaseStorage } from "./supabase";
 
 const R2_ACCOUNT_ID = process.env.R2_ACCOUNT_ID;
 const R2_ACCESS_KEY_ID = process.env.R2_ACCESS_KEY_ID;
@@ -40,7 +41,29 @@ export async function uploadToStorage({
   const sizeInMb = (sizeBytes / (1024 * 1024)).toFixed(1);
   const sizeStr = sizeBytes > 1024 * 1024 ? `${sizeInMb} MB` : `${Math.round(sizeBytes / 1024)} KB`;
 
-  // 1. If Cloudflare R2 is configured, upload to Cloudflare R2
+  // 1. If Supabase is configured, upload to Supabase Storage (100% free, 0 card needed)
+  if (isSupabaseConfigured()) {
+    try {
+      const isLockedPdf = mimeType === "application/pdf" && !originalName.toLowerCase().includes("sample");
+      const uploadRes = await uploadToSupabaseStorage({
+        buffer,
+        originalName,
+        mimeType,
+        isLocked: isLockedPdf,
+      });
+
+      return {
+        url: uploadRes.url,
+        filename: path.basename(uploadRes.path),
+        sizeStr,
+        sizeBytes,
+      };
+    } catch (supabaseErr) {
+      console.error("Supabase Storage upload error, trying next fallback:", supabaseErr);
+    }
+  }
+
+  // 2. If Cloudflare R2 is configured, upload to Cloudflare R2
   if (s3Client && R2_BUCKET_NAME) {
     try {
       await s3Client.send(

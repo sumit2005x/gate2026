@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,19 +14,29 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const orders = db.lookupOrders({
-      email,
-      orderOrPaymentId,
-    });
+    let orders = [];
+    if (isSupabaseConfigured()) {
+      orders = await supabaseDb.lookupOrders({ email, orderOrPaymentId });
+    } else {
+      orders = db.lookupOrders({ email, orderOrPaymentId });
+    }
 
-    const enrichedOrders = orders.map((o) => {
-      const product = db.getProductById(o.productId);
-      return {
-        ...o,
-        product,
-        downloadUrl: `/api/download/${o.downloadToken}`,
-      };
-    });
+    const enrichedOrders = await Promise.all(
+      orders.map(async (o) => {
+        let product = null;
+        if (isSupabaseConfigured()) {
+          product = (await supabaseDb.getProductBySlug(o.productId)) || db.getProductById(o.productId);
+        } else {
+          product = db.getProductById(o.productId);
+        }
+
+        return {
+          ...o,
+          product,
+          downloadUrl: `/api/download/${o.downloadToken}`,
+        };
+      })
+    );
 
     return NextResponse.json({ success: true, orders: enrichedOrders });
   } catch (error: any) {

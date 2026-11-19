@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +14,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const validation = db.validateCoupon(code, Number(amount));
+    const validation = isSupabaseConfigured()
+      ? await supabaseDb.validateCoupon(code, Number(amount))
+      : db.validateCoupon(code, Number(amount));
+
     return NextResponse.json({
       success: validation.valid,
       discount: validation.discount,

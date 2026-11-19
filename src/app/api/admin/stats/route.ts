@@ -1,12 +1,25 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function GET() {
   try {
-    const stats = db.getStats();
-    const categories = db.getCategories();
-    const coupons = db.getCoupons();
-    const settings = db.getSettings();
+    let stats, categories, coupons, settings;
+
+    if (isSupabaseConfigured()) {
+      [stats, categories, coupons, settings] = await Promise.all([
+        supabaseDb.getStats(),
+        supabaseDb.getCategories(),
+        supabaseDb.getCoupons(),
+        supabaseDb.getSettings(),
+      ]);
+    } else {
+      stats = db.getStats();
+      categories = db.getCategories();
+      coupons = db.getCoupons();
+      settings = db.getSettings();
+    }
 
     return NextResponse.json({
       success: true,

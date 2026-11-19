@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function GET(
   req: NextRequest,
@@ -7,8 +9,14 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    // Check by id or slug
-    const product = db.getProductById(id) || db.getProductBySlug(id);
+    let product = null;
+
+    if (isSupabaseConfigured()) {
+      product = (await supabaseDb.getProductBySlug(id)) || db.getProductById(id);
+    } else {
+      product = db.getProductById(id) || db.getProductBySlug(id);
+    }
+
     if (!product) {
       return NextResponse.json(
         { success: false, error: "Product not found" },
@@ -32,7 +40,13 @@ export async function PUT(
     const { id } = await params;
     const body = await req.json();
 
-    const updated = db.updateProduct(id, body);
+    let updated = null;
+    if (isSupabaseConfigured()) {
+      updated = await supabaseDb.updateProduct(id, body);
+    } else {
+      updated = db.updateProduct(id, body);
+    }
+
     if (!updated) {
       return NextResponse.json(
         { success: false, error: "Product not found" },
@@ -55,10 +69,17 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const deleted = db.deleteProduct(id);
+    let deleted = false;
+
+    if (isSupabaseConfigured()) {
+      deleted = await supabaseDb.deleteProduct(id);
+    } else {
+      deleted = db.deleteProduct(id);
+    }
+
     if (!deleted) {
       return NextResponse.json(
-        { success: false, error: "Product not found" },
+        { success: false, error: "Product not found or delete failed" },
         { status: 404 }
       );
     }

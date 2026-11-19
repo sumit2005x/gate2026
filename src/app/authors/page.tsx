@@ -2,10 +2,14 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 import { ArrowRight, CheckCircle2 } from "lucide-react";
 
-export default function AuthorsPage() {
-  const creators = db.getCreators();
+export default async function AuthorsPage() {
+  const creators = isSupabaseConfigured()
+    ? await supabaseDb.getCreators()
+    : db.getCreators();
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">

@@ -2,10 +2,14 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 import { ArrowRight } from "lucide-react";
 
-export default function CategoriesPage() {
-  const categories = db.getCategories();
+export default async function CategoriesPage() {
+  const categories = isSupabaseConfigured()
+    ? await supabaseDb.getCategories()
+    : db.getCategories();
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">

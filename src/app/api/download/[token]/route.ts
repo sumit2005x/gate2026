@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured, getSupabaseSignedDownloadUrl } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function GET(
   req: NextRequest,
@@ -9,22 +11,45 @@ export async function GET(
 ) {
   try {
     const { token } = await params;
-    const { success, product } = db.incrementDownload(token);
+
+    // Check Supabase if configured, otherwise fallback to local db
+    let success = false;
+    let product: any = null;
+
+    if (isSupabaseConfigured()) {
+      const res = await supabaseDb.incrementDownload(token);
+      success = res.success;
+      product = res.product;
+    }
+
+    if (!success) {
+      const localRes = db.incrementDownload(token);
+      success = localRes.success;
+      product = localRes.product;
+    }
 
     if (!success || !product) {
       return new NextResponse("Invalid or expired download link", { status: 404 });
     }
 
-    // If file is stored in Cloudflare R2 or external cloud storage
+    // 1. If stored in Supabase private bucket
+    if (product.digitalFileUrl?.startsWith("supabase://")) {
+      const signedUrl = await getSupabaseSignedDownloadUrl(product.digitalFileUrl, 300);
+      if (signedUrl) {
+        return NextResponse.redirect(signedUrl);
+      }
+    }
+
+    // 2. If stored in Cloudflare R2 or public cloud storage
     if (
-      product.digitalFileUrl.startsWith("http://") ||
-      product.digitalFileUrl.startsWith("https://")
+      product.digitalFileUrl?.startsWith("http://") ||
+      product.digitalFileUrl?.startsWith("https://")
     ) {
       return NextResponse.redirect(product.digitalFileUrl);
     }
 
-    // Determine local file location
-    let relativePath = product.digitalFileUrl;
+    // 3. Fallback: Determine local file location
+    let relativePath = product.digitalFileUrl || "";
     if (relativePath.startsWith("/")) {
       relativePath = relativePath.slice(1);
     }
@@ -39,7 +64,7 @@ export async function GET(
       );
       if (fs.existsSync(fallbackPath)) {
         const fileBuffer = fs.readFileSync(fallbackPath);
-        const filename = `${product.slug}.pdf`;
+        const filename = `${product.slug || "download"}.pdf`;
         return new NextResponse(fileBuffer, {
           status: 200,
           headers: {
@@ -64,6 +89,9 @@ export async function GET(
       },
     });
   } catch (error: any) {
-    return new NextResponse(`Download error: ${error.message}`, { status: 500 });
+    console.error("Download route error:", error);
+    return new NextResponse("Download failed. Please contact support.", {
+      status: 500,
+    });
   }
 }

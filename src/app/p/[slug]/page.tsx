@@ -5,6 +5,8 @@ import Footer from "@/components/Footer";
 import DirectCheckoutCard from "@/components/DirectCheckoutCard";
 import ProductDetailsClient from "./ProductDetailsClient";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 import { ShieldCheck, Download, Share2, ArrowLeft } from "lucide-react";
 
 export function generateStaticParams() {
@@ -20,16 +22,27 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const product = db.getProductBySlug(slug) || db.getProductById(slug);
+  let product = null;
+  if (isSupabaseConfigured()) {
+    product = (await supabaseDb.getProductBySlug(slug)) || db.getProductBySlug(slug) || db.getProductById(slug);
+  } else {
+    product = db.getProductBySlug(slug) || db.getProductById(slug);
+  }
 
   if (!product) {
     notFound();
   }
 
-  const moreFromCreator = db
-    .getProducts({ creator: product.creatorHandle })
-    .filter((p) => p.id !== product.id)
-    .slice(0, 4);
+  let moreFromCreator = [];
+  if (isSupabaseConfigured()) {
+    const creatorProds = await supabaseDb.getProducts({ creator: product.creatorHandle });
+    moreFromCreator = creatorProds.filter((p) => p.id !== product.id).slice(0, 4);
+  } else {
+    moreFromCreator = db
+      .getProducts({ creator: product.creatorHandle })
+      .filter((p) => p.id !== product.id)
+      .slice(0, 4);
+  }
 
   return (
     <div className="min-h-screen flex flex-col bg-paper">

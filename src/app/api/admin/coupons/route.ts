@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function GET() {
   try {
-    const coupons = db.getCoupons();
+    const coupons = isSupabaseConfigured()
+      ? await supabaseDb.getCoupons()
+      : db.getCoupons();
     return NextResponse.json({ success: true, coupons });
   } catch (error: any) {
     return NextResponse.json(
@@ -23,13 +27,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const coupon = db.createCoupon({
+    const couponPayload = {
       code: body.code,
       discountType: body.discountType || "percentage",
       discountValue: Number(body.discountValue),
       minAmount: Number(body.minAmount) || 0,
       active: body.active !== undefined ? Boolean(body.active) : true,
-    });
+    };
+
+    let coupon;
+    if (isSupabaseConfigured()) {
+      coupon = await supabaseDb.createCoupon(couponPayload);
+    } else {
+      coupon = db.createCoupon(couponPayload);
+    }
 
     return NextResponse.json({ success: true, coupon });
   } catch (error: any) {
@@ -51,8 +62,21 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const deleted = db.deleteCoupon(id);
-    return NextResponse.json({ success: deleted });
+    let deleted = false;
+    if (isSupabaseConfigured()) {
+      deleted = await supabaseDb.deleteCoupon(id);
+    } else {
+      deleted = db.deleteCoupon(id);
+    }
+
+    if (!deleted) {
+      return NextResponse.json(
+        { success: false, error: "Coupon not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ success: true, message: "Coupon deleted" });
   } catch (error: any) {
     return NextResponse.json(
       { success: false, error: error.message || "Failed to delete coupon" },

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { isSupabaseConfigured } from "@/lib/supabase";
+import { supabaseDb } from "@/lib/supabase-db";
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,7 +15,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const product = db.getProductById(productId) || db.getProductBySlug(productId);
+    let product = null;
+    if (isSupabaseConfigured()) {
+      product = (await supabaseDb.getProductBySlug(productId)) || db.getProductById(productId);
+    } else {
+      product = db.getProductById(productId) || db.getProductBySlug(productId);
+    }
+
     if (!product) {
       return NextResponse.json(
         { success: false, error: "Product not found" },
@@ -25,7 +33,10 @@ export async function POST(req: NextRequest) {
     let discountAmount = 0;
 
     if (couponCode) {
-      const couponVal = db.validateCoupon(couponCode, product.price);
+      const couponVal = isSupabaseConfigured()
+        ? await supabaseDb.validateCoupon(couponCode, product.price)
+        : db.validateCoupon(couponCode, product.price);
+
       if (couponVal.valid) {
         discountAmount = couponVal.discount;
         finalAmount = Math.max(0, product.price - discountAmount);
@@ -35,7 +46,7 @@ export async function POST(req: NextRequest) {
     const randomSuffix = Math.random().toString(36).substring(2, 10).toUpperCase();
     const simulatedPaymentId = `pay_${randomSuffix}`;
 
-    const order = db.createOrder({
+    const orderPayload = {
       productId: product.id,
       productTitle: product.title,
       productSlug: product.slug,
@@ -47,8 +58,15 @@ export async function POST(req: NextRequest) {
       discountAmount,
       paymentId: simulatedPaymentId,
       paymentMethod: paymentMethod || "UPI",
-      paymentStatus: "completed",
-    });
+      paymentStatus: "completed" as const,
+    };
+
+    let order;
+    if (isSupabaseConfigured()) {
+      order = await supabaseDb.createOrder(orderPayload);
+    } else {
+      order = db.createOrder(orderPayload);
+    }
 
     return NextResponse.json({
       success: true,
