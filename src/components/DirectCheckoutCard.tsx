@@ -163,7 +163,7 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
       <form onSubmit={handleStartCheckout} className="pt-5 space-y-4">
         <div>
           <label className="block text-xs font-medium text-ink-2 mb-1.5">
-            Email <span className="text-muted font-normal">(to find your order later)</span>
+            Email <span className="text-muted font-normal">(to receive & access your PDF)</span>
           </label>
           <input
             type="email"
@@ -171,32 +171,6 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
             placeholder="your.email@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink placeholder:text-muted/70 focus:outline-accent transition-all"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-ink-2 mb-1.5">
-            Phone number <span className="text-muted font-normal">(optional, for UPI)</span>
-          </label>
-          <input
-            type="tel"
-            placeholder="+91 98765 43210"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink placeholder:text-muted/70 focus:outline-accent transition-all font-mono"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-ink-2 mb-1.5">
-            Name <span className="text-muted font-normal">(optional)</span>
-          </label>
-          <input
-            type="text"
-            placeholder="Aspirant Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-rule bg-paper text-ink placeholder:text-muted/70 focus:outline-accent transition-all"
           />
         </div>

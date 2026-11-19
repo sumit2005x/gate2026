@@ -36,8 +36,8 @@ export default function ProductCard({ product, index, featured = false }: Produc
             )}
 
             {/* Format badge */}
-            <div className="absolute bottom-3 right-3 bg-ink/85 backdrop-blur-sm text-paper px-2 py-0.5 rounded text-[10px] font-mono tracking-wider">
-              {product.pageCount ? `${product.pageCount} PAGES` : "PDF"}
+            <div className="absolute bottom-3 right-3 bg-ink/85 backdrop-blur-sm text-paper px-2 py-0.5 rounded text-[10px] font-mono tracking-wider uppercase">
+              {product.format?.toLowerCase().includes("bundle") || product.format?.toLowerCase().includes("zip") ? "BUNDLE" : "PDF"}
             </div>
           </div>
         </div>

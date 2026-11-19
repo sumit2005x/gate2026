@@ -151,8 +151,6 @@ export default async function ProductPage({
                   </span>
                   <span>·</span>
                   <span>{product.format}</span>
-                  <span>·</span>
-                  <span className="text-accent font-semibold">{product.salesCount} bought</span>
                 </div>
 
                 <h1 className="font-serif text-3xl sm:text-4xl font-bold tracking-tight text-ink leading-tight">

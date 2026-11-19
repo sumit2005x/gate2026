@@ -64,7 +64,7 @@ export default function SamplePreviewModal({
               className="btn-cobalt text-xs py-1.5 px-3.5 rounded-full hidden sm:inline-flex"
             >
               <Lock className="w-3.5 h-3.5" />
-              <span>Unlock all {product.pageCount} pages · ₹{product.price}</span>
+              <span>Unlock full content · ₹{product.price}</span>
             </button>
 
             <button
@@ -134,7 +134,7 @@ export default function SamplePreviewModal({
 
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted font-mono hidden md:inline">
-              Sample only · Complete PDF has {product.pageCount} pages with full solutions
+              Sample only · Complete PDF includes full worked solutions
             </span>
             <button
               onClick={() => {

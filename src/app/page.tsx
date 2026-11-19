@@ -2,7 +2,6 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ProductCard from "@/components/ProductCard";
-import NewsletterForm from "@/components/NewsletterForm";
 import { db } from "@/lib/db";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
@@ -17,12 +16,6 @@ export default async function HomePage() {
     : db.getProducts({ includeUnpublished: false });
   const featured = allProducts.slice(0, 5);
   const bundles = allProducts.filter((p) => p.format.toLowerCase().includes("bundle"));
-  const categories = isSupabaseConfigured()
-    ? await supabaseDb.getCategories()
-    : db.getCategories();
-  const creators = isSupabaseConfigured()
-    ? await supabaseDb.getCreators()
-    : db.getCreators();
 
   const faqs = [
     {
@@ -39,7 +32,7 @@ export default async function HomePage() {
     },
     {
       q: "Can I see it before I buy?",
-      a: "Most titles have a free sample: open it from the product page. Page count, file size and access period are listed there too.",
+      a: "Most titles have a free sample: open it from the product page. File size and access period are listed there too.",
     },
     {
       q: "What if the file doesn't open?",
@@ -183,67 +176,11 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* SECTION: THE INDEX / TOPICS */}
-        <section className="py-16 sm:py-20 border-b border-rule">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-baseline justify-between mb-8 pb-4 border-b border-rule">
-              <div>
-                <span className="num-pill block mb-1">03 · TOPICS</span>
-                <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink tracking-tight">
-                  The index · {categories.length} topics
-                </h2>
-              </div>
-              <Link
-                href="/categories"
-                className="text-sm font-medium text-ink hover:underline underline-offset-4 flex items-center gap-1"
-              >
-                <span>All topics</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {categories.map((cat, idx) => (
-                <Link
-                  key={cat.id}
-                  href={`/browse?category=${cat.slug}`}
-                  className="p-5 rounded-xl border border-rule bg-paper hover:bg-paper-2 transition-colors flex items-center justify-between group"
-                >
-                  <div className="space-y-1">
-                    <span className="font-mono text-xs text-muted block">
-                      {String(idx + 1).padStart(2, "0")}
-                    </span>
-                    <h3 className="font-medium text-ink text-base group-hover:text-accent transition-colors">
-                      {cat.name}
-                    </h3>
-                  </div>
-                  <span className="font-mono text-xs text-muted border border-rule px-2 py-0.5 rounded-full bg-paper-2">
-                    {cat.count}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* SECTION: NEWSLETTER SIGNUP */}
-        <section className="py-20 border-b border-rule bg-paper-2/40">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center max-w-2xl space-y-6">
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink">
-              New titles, once a month. <em className="font-normal italic">Nothing else.</em>
-            </h2>
-            <p className="text-sm text-ink-2">
-              Get notified when new question banks and cheat sheets are released.
-            </p>
-            <NewsletterForm />
-          </div>
-        </section>
-
         {/* SECTION: FAQ ACCORDION */}
         <section id="faq" className="py-16 sm:py-24">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="mb-12 text-center space-y-2">
-              <span className="num-pill">04 · ANSWERS</span>
+              <span className="num-pill">03 · ANSWERS</span>
               <h2 className="font-serif text-3xl sm:text-4xl font-bold text-ink">
                 Questions
               </h2>
