@@ -357,46 +357,74 @@ const INITIAL_ORDERS: Order[] = [
   },
 ];
 
-function ensureDbFile(): DatabaseSchema {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
-  }
+// In-memory cache for serverless environments (e.g. Vercel) where filesystem is read-only
+let memoryDb: DatabaseSchema | null = null;
 
-  if (!fs.existsSync(DB_FILE)) {
-    const initialData: DatabaseSchema = {
-      products: INITIAL_PRODUCTS,
-      orders: INITIAL_ORDERS,
-      coupons: INITIAL_COUPONS,
-      categories: INITIAL_CATEGORIES,
-      creators: INITIAL_CREATORS,
-      settings: DEFAULT_SETTINGS,
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), "utf-8");
-    return initialData;
-  }
-
+function getTmpDbPath(): string {
   try {
-    const raw = fs.readFileSync(DB_FILE, "utf-8");
-    return JSON.parse(raw) as DatabaseSchema;
+    const osTmp = process.env.TMPDIR || process.env.TEMP || "/tmp";
+    return path.join(osTmp, "byline_db.json");
   } catch {
-    const initialData: DatabaseSchema = {
-      products: INITIAL_PRODUCTS,
-      orders: INITIAL_ORDERS,
-      coupons: INITIAL_COUPONS,
-      categories: INITIAL_CATEGORIES,
-      creators: INITIAL_CREATORS,
-      settings: DEFAULT_SETTINGS,
-    };
-    fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), "utf-8");
-    return initialData;
+    return "/tmp/byline_db.json";
   }
 }
 
-function saveDb(data: DatabaseSchema) {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true });
+function ensureDbFile(): DatabaseSchema {
+  if (memoryDb) {
+    return memoryDb;
   }
-  fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+
+  // 1. Check if modified in tmp (for serverless environments)
+  const tmpPath = getTmpDbPath();
+  try {
+    if (fs.existsSync(tmpPath)) {
+      const raw = fs.readFileSync(tmpPath, "utf-8");
+      memoryDb = JSON.parse(raw) as DatabaseSchema;
+      return memoryDb;
+    }
+  } catch {}
+
+  // 2. Read from repo DB_FILE
+  try {
+    if (fs.existsSync(DB_FILE)) {
+      const raw = fs.readFileSync(DB_FILE, "utf-8");
+      memoryDb = JSON.parse(raw) as DatabaseSchema;
+      return memoryDb;
+    }
+  } catch {}
+
+  const initialData: DatabaseSchema = {
+    products: INITIAL_PRODUCTS,
+    orders: INITIAL_ORDERS,
+    coupons: INITIAL_COUPONS,
+    categories: INITIAL_CATEGORIES,
+    creators: INITIAL_CREATORS,
+    settings: DEFAULT_SETTINGS,
+  };
+  memoryDb = initialData;
+  return initialData;
+}
+
+function saveDb(data: DatabaseSchema) {
+  memoryDb = data;
+
+  // Try writing to DB_FILE (works in local dev)
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), "utf-8");
+    return;
+  } catch (err: any) {
+    // If read-only filesystem (EROFS on Vercel/AWS Lambda), fallback to /tmp
+    try {
+      const tmpPath = getTmpDbPath();
+      fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2), "utf-8");
+    } catch (tmpErr) {
+      // Memory cache is already updated, so current request and execution context keeps changes
+      console.warn("Serverless disk write skipped:", err.message);
+    }
+  }
 }
 
 export const db = {
@@ -485,7 +513,7 @@ export const db = {
 
   updateProduct(id: string, updates: Partial<DigitalProduct>): DigitalProduct | null {
     const data = ensureDbFile();
-    const index = data.products.findIndex((p) => p.id === id);
+    const index = data.products.findIndex((p) => p.id === id || p.slug === id);
     if (index === -1) return null;
 
     data.products[index] = {

@@ -49,9 +49,13 @@ export async function PUT(
       }
     }
 
-    const localUpdated = db.updateProduct(id, body);
-    if (!updated) {
-      updated = localUpdated;
+    try {
+      const localUpdated = db.updateProduct(id, body);
+      if (!updated) {
+        updated = localUpdated;
+      }
+    } catch (localErr) {
+      console.warn("Local DB update warning:", localErr);
     }
 
     if (!updated) {

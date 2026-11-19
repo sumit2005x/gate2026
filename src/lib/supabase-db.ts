@@ -240,12 +240,17 @@ export const supabaseDb = {
     const { data, error } = await supabase
       .from("products")
       .update(updateData)
-      .eq("id", id)
-      .select()
-      .single();
+      .or(`id.eq.${id},slug.eq.${id}`)
+      .select();
 
-    if (error || !data) return null;
-    return mapProduct(data);
+    if (error) {
+      console.warn("Supabase updateProduct warning:", error.message);
+      return null;
+    }
+    if (!data || data.length === 0) {
+      return null;
+    }
+    return mapProduct(data[0]);
   },
 
   async deleteProduct(id: string): Promise<boolean> {
