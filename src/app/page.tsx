@@ -5,7 +5,7 @@ import ProductCard from "@/components/ProductCard";
 import { db } from "@/lib/db";
 import { isSupabaseConfigured } from "@/lib/supabase";
 import { supabaseDb } from "@/lib/supabase-db";
-import { ArrowRight, BookOpen, ShieldCheck, Download, Sparkles, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, BookOpen, ShieldCheck, Sparkles, Check, ChevronDown } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -82,16 +82,6 @@ export default async function HomePage() {
                   <span>Browse High-Yield Bundle</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
-
-                <a
-                  href="/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-line text-base px-6 py-3.5 rounded-full inline-flex items-center gap-2 hover:bg-paper-2"
-                >
-                  <Download className="w-4 h-4 text-accent" />
-                  <span>Download Free 30-Page Sample (PDF)</span>
-                </a>
               </div>
             </div>
           </div>
