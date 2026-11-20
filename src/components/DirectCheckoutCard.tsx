@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ShieldCheck, Download, Tag, ArrowRight, Check, AlertCircle } from "lucide-react";
+import { ShieldCheck, Download, Tag, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
 import { DigitalProduct, Order } from "@/lib/types";
 import RazorpayModal from "./RazorpayModal";
 
@@ -220,10 +220,13 @@ export default function DirectCheckoutCard({ product }: DirectCheckoutCardProps)
           <button
             type="submit"
             disabled={checkoutLoading}
-            className="btn-cobalt w-full py-3.5 rounded-xl font-medium text-base shadow-sm group disabled:opacity-50"
+            className="btn-cobalt w-full py-3.5 rounded-xl font-medium text-base shadow-sm group disabled:opacity-50 cursor-pointer active:scale-98 transition-transform"
           >
             {checkoutLoading ? (
-              <span>Connecting to Razorpay...</span>
+              <span className="flex items-center justify-center gap-2">
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+                <span>Connecting to Razorpay...</span>
+              </span>
             ) : (
               <>
                 <span>Buy now · ₹{currentPayable}</span>

@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import NavigationProgressBar from "@/components/NavigationProgressBar";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,6 +41,9 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-paper text-ink selection:bg-accent/20 selection:text-ink">
+        <Suspense fallback={null}>
+          <NavigationProgressBar />
+        </Suspense>
         {children}
       </body>
     </html>

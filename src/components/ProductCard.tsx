@@ -15,7 +15,7 @@ export default function ProductCard({ product, index, featured = false }: Produc
       : null;
 
   return (
-    <Link href={`/p/${product.slug}`} className="group block text-left">
+    <Link href={`/p/${product.slug}`} className="group block text-left active:scale-[0.98] transition-all">
       <div className="transition-transform duration-300 group-hover:-translate-y-1">
         {/* Layered book sheets representation */}
         <div className="sheets relative">
