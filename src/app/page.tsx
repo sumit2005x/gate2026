@@ -19,20 +19,24 @@ export default async function HomePage() {
 
   const faqs = [
     {
+      q: "Can I use the CBT Simulator on my laptop/Mac/Linux?",
+      a: "Yes. The CBT Simulator is an offline, standalone web application. Just open the .html file inside Google Chrome, Edge, Safari, or Firefox on any PC, laptop, or tablet. No installation, login, or internet required.",
+    },
+    {
+      q: "Are the solutions step-by-step or just answer keys?",
+      a: "Every single question in both the 90-Day Patterns Book and the 10 Mocks includes detailed, mathematical, step-by-step derivations, diagrammatic proofs, and C-code walkthroughs—not just single-letter answer keys.",
+    },
+    {
+      q: "How do I receive the files after payment?",
+      a: "Immediately after UPI/card payment via Razorpay, you will get an instant download link on your screen, plus a permanent backup link delivered directly to your entered email address.",
+    },
+    {
       q: "How do I pay?",
       a: "Through Razorpay: UPI (GPay, PhonePe, Paytm), debit and credit cards, netbanking and wallets. The download unlocks the moment payment goes through. No account needed.",
     },
     {
       q: "Where do I find my purchases later?",
       a: "Signed in: in your Library. Bought without an account: open My purchases and enter your email with your order number (BD…) or the Razorpay payment ID (pay_…) from Razorpay's receipt.",
-    },
-    {
-      q: "I bought without logging in. Why isn't it in my Library?",
-      a: "Purchases made without an account stay with the order, not with your login, so they won't show in your Library. You still have full access: open My purchases, enter the email you paid with and your order number (BD…) or Razorpay payment ID (pay_…), and download from there. Orders bought on the same device are already listed on that page.",
-    },
-    {
-      q: "Can I see it before I buy?",
-      a: "Most titles have a free sample: open it from the product page. File size and access period are listed there too.",
     },
     {
       q: "What if the file doesn't open?",
@@ -50,37 +54,43 @@ export default async function HomePage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl space-y-8">
               {/* Top provenance badge */}
-              <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-muted">
-                <span className="font-semibold text-ink">Independent digital publishing</span>
-                <span>·</span>
-                <span>Est. 2026 · India</span>
-                <span className="hidden sm:inline">·</span>
-                <span className="bg-paper-2 border border-rule px-2.5 py-0.5 rounded-full text-ink font-mono text-[11px]">
-                  {allProducts.length} titles
+              <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
+                <span className="bg-accent/10 text-accent font-semibold px-3 py-1 rounded-full border border-accent/25 tracking-wide">
+                  90-DAY HIGH-YIELD GATE CSE PREPARATION · INDIA
                 </span>
+                <span className="text-muted hidden sm:inline">·</span>
+                <span className="text-muted hidden sm:inline">GATE CSE 2026 / 2027 Sprint Edition</span>
               </div>
 
               {/* Headline */}
               <div className="space-y-4">
-                <h1 className="font-serif text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-ink leading-[1.05]">
-                  Pages worth <br className="hidden sm:inline" />
-                  paying for.
+                <h1 className="font-serif text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-ink leading-[1.08]">
+                  Don't study all 178 chapters equally. <br className="hidden sm:inline" />
+                  <span className="text-accent font-normal italic">Master what GATE actually repeats.</span>
                 </h1>
-                <p className="text-lg sm:text-xl text-ink-2 max-w-2xl leading-relaxed">
-                  Notes, cheat sheets and guides made by people who have been through the exam.
-                  Pay by UPI, download instantly, keep them forever in your library.
+                <p className="text-base sm:text-xl text-ink-2 max-w-2xl leading-relaxed">
+                  122 high-frequency question patterns from 2008–2026, paired with 10 full-length predicted TCS iON mocks. Instant download, lifetime offline access.
                 </p>
               </div>
 
               {/* Hero Action Buttons */}
               <div className="pt-2 flex flex-wrap items-center gap-4">
-                <Link href="/browse" className="btn-ink text-base px-6 py-3 rounded-full">
-                  <span>Browse PDFs</span>
+                <Link
+                  href="/p/gate-cse-2027-ultimate-mock-series-repeated-patterns-bundle"
+                  className="btn-ink text-base px-7 py-3.5 rounded-full shadow-sm hover:scale-[1.02] transition-transform inline-flex items-center gap-2"
+                >
+                  <span>Browse High-Yield Bundle</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
 
-                <a href="#new-this-week" className="btn-line text-base px-6 py-3 rounded-full">
-                  <span>Discover titles</span>
+                <a
+                  href="/sample_downloads/GATE_CSE_2027_Mock_01_FREE_SAMPLE.pdf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-line text-base px-6 py-3.5 rounded-full inline-flex items-center gap-2 hover:bg-paper-2"
+                >
+                  <Download className="w-4 h-4 text-accent" />
+                  <span>Download Free 30-Page Sample (PDF)</span>
                 </a>
               </div>
             </div>
